@@ -1,0 +1,59 @@
+
+  [
+		
+				  {  "fy":"2014 - 15",
+					"rag":"lightgreen",
+					"invoiceId": "AFP/INV/096",
+					"clientName": "Skyline",
+					"billAmt": 680223.5,
+					"payReceivedAmt": 782203.2,
+					"payDateFinal":1480495549781,
+					"invoiceDate":"2016-10-10",
+					"payReceived": "false",
+					"payRecoveryDays":10,
+					"details": "Test"
+				  },
+				  {
+				  "fy":"2014 - 15",
+					"invoiceId": "AFP/INV/097",
+					"clientName": "Skyline Enterprises",
+					"billAmt": 680223.5,
+					"payReceivedAmt": 782203.2,
+					"payDateFinal":1480495549781,
+					"invoiceDate":"2016-10-10",
+					"payReceived": "true",
+					"payRecoveryDays":30,
+					"payReceived": "true",
+					"details": "Test"
+				  },
+				  {
+				  "fy":"2014 - 15",
+					"invoiceId": "AFP/INV/098",
+					"clientName": "Skyline Enterprises",
+					"billAmt": 680223.5,
+					"payReceivedAmt": 782203.2,
+					"payDateFinal":1480495549781,
+					"payReceived": "true",
+					"details": "Test"
+				  },
+				  {
+					"fy":"2014 - 15",
+					"invoiceId": "AFP/INV/099",
+					"clientName": "Skyline Enterprises",
+					"billAmt": 680223.5,
+					"payReceivedAmt": 782203.2,
+					"payDateFinal":1480495549781,
+					"payReceived": "false",
+					"details": "Test"
+				  },
+				  {
+				   "fy":"2014 - 15",
+					"invoiceId": "AFP/INV/020",
+					"clientName": "Skyline Enterprises",
+					"billAmt": 680223.5,
+					"payReceivedAmt": 782203.2,
+					"payDateFinal":1480495549781,
+					"payReceived": "true",
+					"details": "XYZ"
+				  }
+		]

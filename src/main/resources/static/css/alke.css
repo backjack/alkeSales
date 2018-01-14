@@ -1,0 +1,385 @@
+#graphPage {
+  font-weight: bold;
+
+}
+
+#invoiceToolbar{
+	padding-right:10px;
+}
+
+.clientNameFilter {
+	
+	margin-left: 10px;
+    margin-top: -7px; 
+    margin-right:10px;
+}
+
+#downloadXls{
+
+  /*  float: right !important;*/
+    margin-left: 10px;
+    margin-top: -7px; 
+    margin-right:10px;
+}
+
+.modal-header {
+    padding:9px 15px;
+    border-bottom:1px solid #eee;
+    background-color: #337ab7;
+    -webkit-border-top-left-radius: 5px;
+    -webkit-border-top-right-radius: 5px;
+    -moz-border-radius-topleft: 5px;
+    -moz-border-radius-topright: 5px;
+     border-top-left-radius: 5px;
+     border-top-right-radius: 5px;
+ }
+
+#editItems {
+	margin-left:10px;
+}
+
+
+#downloadInvoice{
+	margin-left:10px;
+}
+
+
+#invoiceDetails .modal-dialog{
+	
+	width: 1000px !important
+}
+
+#invoiceDetails .row {
+	margin-top:10px;
+}
+
+
+.invoiceDetailform {
+	background-color: #E8E8E8;
+}
+
+#menu {
+	height:10%;
+}
+
+.white-icon {
+	color:white;
+}
+
+
+.total{
+  text-align: center;
+
+}
+
+#saveitems{
+	padding:10px;	
+}
+
+#formRow {
+    background-color: #E8E8E8;
+    width:100%;
+}
+
+.close {
+    float: right;
+    font-size: 21px;
+    font-weight: 700;
+    line-height: 1;
+    color: #000;
+    text-shadow: 0 1px 0 #fff;
+    filter: alpha(opacity=20);
+     /*opacity: .2; */
+}
+
+#saveitemsDiv {
+	margin-top:10px;
+}
+
+#form1{
+	margin-top:10px;
+}
+
+#form2{
+	margin-top:10px;
+}
+
+#form4 {
+	    padding-top: 10px;
+	    padding-bottom: 10px;
+	    background-color: #E8E8E8;
+}
+
+#form3{
+	margin-top:10px;
+}
+
+.sidenav {
+	
+    height: 53vh;
+    width: 0;
+    position: fixed;
+    z-index: 1;
+  /*   top: 0; */
+    left: 0;
+    background-color: #337ab7;
+    overflow: hidden;
+    transition: 0.5s;
+    padding-top: 5px;
+    width:10%;
+}
+
+#main {
+	
+	height:70vh;
+	background-color:#E8E8E8
+}
+.
+
+.opengallery {
+
+	margin-left: 2em;
+	margin-bottom:0.5em;
+}
+.sidenav .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+}
+
+.menu {
+    margin-top:2px;
+    background-color:#31C3E7;
+    height:4em;
+}
+
+.menu-selected {
+    margin-top:2px;
+    /*background-color:#31C3E7;*/
+    height:4em;
+}
+
+.menu:hover { 
+    background-color: #258ecd;
+}
+
+.label {
+	text-align: left;
+	padding-top:1.5em;
+	padding-left:1.5em;
+	font-family: Lato;
+    font-size: 1.0em;
+    color: white;
+    display: block;
+    transition: 0.3s;
+    font-weight: 300 !important;
+}
+
+.gallery {
+	text-align:center;
+	color:#afdefa;
+	font-family: Lato;
+}
+
+.gallery h4{
+	margin-bottom: 2em !important;
+	font-weight: 300 !important;
+	margin-right: 1.5em !important;
+}
+
+@media screen and (max-height: 450px) {
+  .sidenav {padding-top: 15px;}
+ 
+}
+
+
+.navbar {
+  background-color: #337ab7 !important;
+  border-color: #258ecd !important;
+  margin-bottom: 5px;
+}
+.navbar .navbar-brand {
+  color: #ecf0f1;
+}
+.navbar .navbar-brand:hover,
+.navbar .navbar-brand:focus {
+  color: white;
+}
+.navbar .navbar-text {
+  color: #ecf0f1;
+}
+.navbar .navbar-nav > li > a {
+  color: #ecf0f1;
+}
+.navbar .navbar-nav > li > a:hover,
+.navbar .navbar-nav > li > a:focus {
+  color: white;
+}
+.navbar .navbar-nav > .active > a,
+.navbar .navbar-nav > .active > a:hover,
+.navbar .navbar-nav > .active > a:focus {
+  color: #FFFFFF;
+  background-color: #31C3E7;
+}
+.navbar .navbar-nav > .open > a,
+.navbar .navbar-nav > .open > a:hover,
+.navbar .navbar-nav > .open > a:focus {
+  color: #FFFFFF;
+  background-color: #258ecd;
+}
+.navbar .navbar-toggle {
+  border-color: #258ecd;
+}
+.navbar .navbar-toggle:hover,
+.navbar .navbar-toggle:focus {
+  background-color: #258ecd;
+}
+.navbar .navbar-toggle .icon-bar {
+  background-color: #ecf0f1;
+}
+.navbar .navbar-collapse,
+.navbar .navbar-form {
+  border-color: #ecf0f1;
+}
+.navbar .navbar-link {
+  color: #ecf0f1;
+}
+.navbar .navbar-link:hover {
+  color: #31C3E7;
+}
+
+@media (max-width: 767px) {
+  .navbar .navbar-nav .open .dropdown-menu > li > a {
+    color: #ecf0f1;
+  }
+  .navbar .navbar-nav .open .dropdown-menu > li > a:hover,
+  .navbar .navbar-nav .open .dropdown-menu > li > a:focus {
+    color: white;
+  }
+  .navbar .navbar-nav .open .dropdown-menu > .active > a,
+  .navbar .navbar-nav .open .dropdown-menu > .active > a:hover,
+  .navbar .navbar-nav .open .dropdown-menu > .active > a:focus {
+    color: white;
+    background-color: #258ecd;
+  }
+}
+
+
+.bootstrap-select:not([class*=col-]):not([class*=form-control]):not(.input-group-btn) {
+    width: 150px;
+}
+
+
+.panel-default>.panel-heading {
+	
+	    color: #ffffff;
+    background-color: #337ab7;
+    border-color:#1e4f7a;
+	}
+
+.panel-default {
+    border-color: #1e4f7a;
+}
+
+#gridrow{
+	/*height:90% !important;*/
+}
+#jsGrid{
+	
+	/* height:50% !important;
+	 overflow: scroll; */
+} 
+
+#accordion {
+	
+	margin:10px;
+}
+
+#accordionItem{
+	margin:10px;
+}
+
+#sales{
+
+	margin-bottom:2em;
+	height:20vh;
+}
+.watchitem {
+	/* margin-left:1em;
+	margin-bottom:0.5em;
+	margin-top:0.5em; */
+	height: 90%;
+	color: white;
+	padding-left:5px;
+	padding-right:5px;
+	margin-left:0px; 
+	border-style: solid;
+    border-width: 5px;
+     border-color: #E8E8E8;
+}
+.watchItemRow {
+	height: 10em;
+	background-color:#E8E8E8;
+	 padding-top:1em;
+	  padding-bottom:0.5em;
+	  padding-left:0.5em;
+	   padding-right:0.5em;
+}
+
+.watchItemValue{
+	padding-top:1em;
+	font-size: 2.2em;
+	float:right;
+	font-family: Lato;
+	padding-right:0.5em;
+}
+
+.grandTotalValue{
+	padding-bottom:1em;
+	font-size: 1.2em;
+}
+
+.invoiceDetailform {
+	
+
+}
+
+.watchItemText{
+	float:left;
+	padding-top:2px;
+	font-size:  1.6em; 
+	padding-left:0.5em;
+	
+}
+
+.glyphicon.glyphicon-shopping-cart {
+    font-size:  1.56em; 
+    padding-top:1em; 
+}
+
+.glyphicon.glyphicon-fire {
+    font-size: 1.56em; 
+    padding-top:1em; 
+}
+
+.glyphicon.glyphicon-usd {
+    font-size: 1.56em; 
+    padding-top:1em; 
+}
+
+body {
+	font-family: Lato;
+}
+
+
+.my-row-custom-cls  {
+ /*    background: red !important;
+     bgcolor: red !important;
+    color: green;
+ */}
+ td.invoice-grid-red {
+	
+	 background: red;
+} 

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Bootstrap Example</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/css/bootstrap-select.min.css">
+   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid.min.css" />
+  <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid-theme.min.css" />
+  <link type="text/css" rel="stylesheet" href="css/alke.css" />
+  
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.js"></script>
+   <!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script> -->
+  
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid.min.js"></script>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.11.2/js/bootstrap-select.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+ <script src="js/alke.js"></script>
+ 
+  
+ 
+</head>
+<body>
+
+<nav class="navbar navbar-inverse">
+  <div class="container-fluid">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand active" href="#">ALKE Analytics</a>
+    </div>
+    <div class="collapse navbar-collapse" id="myNavbar">
+      <ul class="nav navbar-nav">
+        <li class="active"><a id="homeMenu" href="#">Home</a></li>
+        <!--<li class="dropdown">
+          <a class="dropdown-toggle" data-toggle="dropdown" href="#">Page 1 <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Page 1-1</a></li>
+            <li><a href="#">Page 1-2</a></li>
+            <li><a href="#">Page 1-3</a></li>
+          </ul>
+        </li>--->
+        <li><a id="pg2" href="#">Sales</a></li>
+        <li><a href="#">Page 3</a></li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li><a href="#"><span class="glyphicon glyphicon-user"></span> Sign Up</a></li>
+        <li><a href="#"><span class="glyphicon glyphicon-log-in"></span> Login</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<div class="container-fluid" id="sales">
+  <h3><p> Sales Figure</h3>
+  <div class="row" style="margin-bottom:1em">
+  
+  <div class="col-xs-2 col-md-1" >
+    <div id="testPick" > <span style ="display:inline"> FY </span></div>
+
+		<!--<select id="fySelector" class="selectpicker" multiple title="Choose Financial Year">
+		  <option>All</option>
+		  <option>2013-2014</option>
+		  <option>2014-2015</option>
+		  <option>2015-2016</option>
+		  <option>2016-2017</option>
+		</select>-->
+
+  </div>
+  </div>
+  
+  <div class="row">
+ 
+    <div class="col-xs-12 col-md-12">
+	<div id="jsGrid" style="height:300px"></div>
+	</div>
+    <!--<div class="col-xs-3 col-md-5" style="background-color:lavender;">.col-xs-3 .col-md-5</div>-->
+  </div>
+</div>
+    
+	
+  <!-- Modal -->
+  <div id="invoiceDetails" class="modal fade"  role="dialog">
+    <div class="modal-dialog" style="width:700px!important" >
+    
+      <!-- Modal content-->
+      <div class="modal-content" style="height:550px!important">
+        <div class="modal-header">
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          
+        </div>
+        <div class="modal-body">
+		  <div id="invoiceDetailGrid"></div>		  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  
+  <!-- Modal -->
+  <div id="addInvoice" class="modal fade"  role="dialog">
+    <div class="modal-dialog" style="height:650px!important width:100px!important" >
+
+      <!-- Modal content-->
+      <div class="modal-content" style="height:580px!important width:100px!important">
+        <div class="modal-header">     <h4> Add New Invoice</h4>
+          <button type="button" class="close" data-dismiss="modal">&times;</button>
+          
+        </div>
+        <div class="modal-body">
+		              <form class="form-horizontal">
+							  <div class="form-group">
+								<label class="col-sm-3 control-label" for="email">InvoiceId</label>
+								<div class="col-md-6">
+								  <input type="email" class="form-control" id="email" placeholder="Enter Invoice">
+								</div>
+							  </div>
+							  <div class="form-group">
+								<label class="col-sm-3 control-label" for="pwd">ClientName</label>
+								<div class="col-md-6"> 
+								  <input type="password" class="form-control" id="pwd" placeholder="Enter password">
+								</div>
+							  </div>
+							   <div class="form-group">
+								<label class="col-sm-3 control-label" for="pwd">Bill Amount</label>
+								<div class="col-md-6"> 
+								  <input type="text" class="form-control" id="billAmt" placeholder="Enter Bill Amount">
+								</div>
+							  </div>
+							   <div class="form-group">
+								<label class="col-sm-3 control-label" for="pwd">Pay Days</label>
+								<div class="col-md-6"> 
+								  <input type="text" class="form-control" id="paymentDays" placeholder="Enter No of Payment Days">
+								</div>
+							  </div>
+							  <div class="form-group">
+									<label for="invoiceDate" class="col-sm-3 control-label">Invoice Date</label>
+									<div class="col-md-6">
+											<input type="date" id="invoiceDate" class="form-control">
+									</div>
+							 </div>
+							  <div class="form-group">
+									<label for="Notes" class="col-sm-3 control-label">Notes</label>
+									 <div class="col-md-6">
+											<textarea class="form-control" rows="3" id="notes"></textarea>
+									</div>
+							 </div>
+							  <div class="form-group"> 
+								<div class="col-md-offset-6 col-sm-10">
+								   <button type="submit" class="btn btn-default">Submit</button>
+								   <button type="clear" class="btn btn-default">Clear</button>
+								</div>
+							  </div>
+							</form>		  
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="row" id="home">
+    <div class="col-xs-12 col-md-4">
+	  <canvas id="myChart"></canvas>
+	</div>
+	 <div class="col-xs-12 col-md-4">
+	   <canvas id="salesByClient"></canvas>
+	</div>
+	 <div class="col-xs-12 col-md-4">
+	   <canvas id="salesFig"></canvas>
+	</div>
+  </div>
+</div>
+
+	
+</body>
+</html>
+
