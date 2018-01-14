@@ -2,6 +2,7 @@ package com.alkefp.sales.config;
 
 import javax.sql.DataSource;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -10,31 +11,11 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 @Configuration
 public class SalesConfiguration {
-
-	/*******Dev
-	 *  jdbc:mysql://db4free.net:3306/alke 
-	 *  alke
-	 *  alke#22
-	 * 
-	 */
 	
-	/*******Prod
-	 *  jdbc:mysql://alke.cmex3ogn91i5.us-west-2.rds.amazonaws.com:3306/alke
-	 *  alke
-	 *  alke#123
-	 * 
-	 */
-	
-	private String url ="jdbc:mysql://alke.cmex3ogn91i5.us-west-2.rds.amazonaws.com:3306/alke ";
+	private String url ;
 	private String port;
-	private String user="alke";
-	private String password ="alke#123";
-	
-	/*private String url ="jdbc:mysql://localhost:3306/alke";
-	private String port;
-	private String user="root";
-	private String password ="";*/
-	
+	private String user;
+	private String password;
 	private String database;
 
 
@@ -43,7 +24,11 @@ public class SalesConfiguration {
 
 		DriverManagerDataSource  dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
+	
+		String url = System.getenv().get("url");
 		dataSource.setUrl(url);
+		String user = System.getenv().get("user");
+		String password = System.getenv().get("password");
 		dataSource.setUsername(user);
 		dataSource.setPassword(password);
 		return dataSource;
