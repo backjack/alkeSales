@@ -60,8 +60,8 @@ public class WebConfig extends WebSecurityConfigurerAdapter {
 
 	
 		auth.jdbcAuthentication().dataSource(jdbcTemplate.getDataSource()).usersByUsernameQuery(
-				"select username, password,'true' from alke.user_profile where username =?"
-				).authoritiesByUsernameQuery("select username,'USER' from alke.user_profile where username =?");
+				"select username, password,'true' from user_profile where username =?"
+				).authoritiesByUsernameQuery("select username,'USER' from user_profile where username =?");
 	}
 	
 	 /*@Override

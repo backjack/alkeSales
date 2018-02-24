@@ -76,7 +76,7 @@ public class InvoiceDetailDao {
 		
 		String sql = "select c.clientId, c.clientName,c.address,c.shortName,delivery_note,delivery_date,buyer_order,c.gstNo," +
 				"buyer_date,destination,despatched,s.invoiceDate " +
-				"from alke.invoice_header h RIGHT join sales s " +
+				"from invoice_header h RIGHT join sales s " +
 				" on h.invoiceId = s.invoiceId and h.groupId = s.groupId and h.fyYear= s.fyYear join client c " +
 				"on c.clientId= s.clientId and c.groupId= s.groupId " +
 				"where s.invoiceId =? and s.fyYear =? and s.groupId=?";
@@ -120,7 +120,7 @@ public class InvoiceDetailDao {
 	
     public List<Item> getInvoiceItems(String invoiceId, int fyyear, String groupId) {
     	
-    	String sql = "select id,fyYear,invoiceId,groupId,HNS_code,item,rate,qty,tax,sgst,igst,cgst from alke.invoice_item where invoiceId=? and fyYear =? and groupId=?";
+    	String sql = "select id,fyYear,invoiceId,groupId,HNS_code,item,rate,qty,tax,sgst,igst,cgst from invoice_item where invoiceId=? and fyYear =? and groupId=?";
     	List<Item> items = jdbcTemplate.query(sql,  new Object[]{invoiceId,fyyear,groupId}, new RowMapper<Item>(){
 
 			@Override
@@ -190,7 +190,7 @@ public class InvoiceDetailDao {
     }
 	
 	public void addInvoiceDetail(InvoiceDetail invoiceDetail) {
-		String sql = "insert into alke.invoice_header(invoiceId,fyYear,groupId,delivery_note,delivery_date," +
+		String sql = "insert into invoice_header(invoiceId,fyYear,groupId,delivery_note,delivery_date," +
 				"buyer_order,buyer_date,destination,despatched) values(?,?,?,?,?,?,?,?,?)";
 		
 		java.sql.Date delDate = invoiceDetail.getDeliveryDate()!=null? new java.sql.Date(invoiceDetail.getDeliveryDate().getTime()):null;
@@ -206,13 +206,13 @@ public class InvoiceDetailDao {
 	
 	public int getInvoiceDetail(InvoiceDetail invoiceDetail) {
 		
-		String sql = "select count(*) from alke.invoice_header where invoiceId=? and fyYear=? and groupId = ? ";
+		String sql = "select count(*) from invoice_header where invoiceId=? and fyYear=? and groupId = ? ";
 		return jdbcTemplate.queryForObject(sql,new Object[]{invoiceDetail.getInvoiceId(),invoiceDetail.getFyear(),invoiceDetail.getGroupId()},
 				Integer.class);
 	}
 	
 	public void updateInvoiceDetail(InvoiceDetail invoiceDetail) {
-		String sql = "update alke.invoice_header set delivery_note =? ,delivery_date =?," +
+		String sql = "update invoice_header set delivery_note =? ,delivery_date =?," +
 				"buyer_order=? ,buyer_date=?,destination=?,despatched=? where invoiceId=? and fyYear=? and groupId = ?";
 		
 		java.sql.Date delDate = invoiceDetail.getDeliveryDate()!=null? new java.sql.Date(invoiceDetail.getDeliveryDate().getTime()):null;
@@ -232,7 +232,7 @@ public class InvoiceDetailDao {
 	
 	public void addInvoiceItem(final List<Item> items,final String groupId) {
 		
-		String sql = "insert into alke.invoice_item (invoiceId,fyYear,groupId,item,rate," +
+		String sql = "insert into invoice_item (invoiceId,fyYear,groupId,item,rate," +
 				"qty,tax,HNS_code,sgst,cgst,igst) values(?,?,?,?,?,?,?,?,?,?,?)";
 		
 		jdbcTemplate.batchUpdate(sql,  new BatchPreparedStatementSetter() {
@@ -312,14 +312,14 @@ public void updateSales(final List<Item> items,final String groupId) {
 		    .setScale(0, RoundingMode.HALF_UP)
 		    .doubleValue();
 	
-	String sql = "update alke.sales set billAmt=?,totalAmt=? where invoiceId =? and fyYear =? and groupId =?";
+	String sql = "update sales set billAmt=?,totalAmt=? where invoiceId =? and fyYear =? and groupId =?";
 	jdbcTemplate.update(sql, new Object[]{billAmount,truncatedDouble,item.getInvoiceId(), item.getFyear(), groupId});
 }
 	
 public void updateInvoiceItem(final List<Item> items,final String groupId) {
 
 		
-		String sql = "update alke.invoice_item set item =?, rate= ?, qty =? , tax =?, sgst=?, cgst=?, igst=?, HNS_code =? where invoiceId=? " +
+		String sql = "update invoice_item set item =?, rate= ?, qty =? , tax =?, sgst=?, cgst=?, igst=?, HNS_code =? where invoiceId=? " +
 				"and fyYear=? and groupId=? and id=?";
 		
 		jdbcTemplate.batchUpdate(sql,  new BatchPreparedStatementSetter() {
@@ -379,9 +379,9 @@ public void updateInvoiceItem(final List<Item> items,final String groupId) {
 
 public void deleteInvoiceItem(final Item item) {
 	
-	String sql = "delete from alke.invoice_item  where invoiceId=? " +
+	String sql = "delete from invoice_item  where invoiceId=? " +
 			"and fyYear=? and groupId=? and id=?";
-	
+
 	jdbcTemplate.update(sql,new Object[]{item.getInvoiceId(),item.getFyear(),item.getGroupId(),item.getId()});
 	List<Item> items = Lists.newArrayList(item);
 	updateSales(items,item.getGroupId());
