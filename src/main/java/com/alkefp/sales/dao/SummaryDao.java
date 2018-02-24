@@ -164,7 +164,7 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 	parameters.addValue("groupId", groupId);
 	String sqlQuery = "select sumBill,sumPartPymt,s.fyYear,s.invoiceCount,s.groupId from" +
 			" ((select clientId,fyYear,groupId,sum(totalAmt) as sumBill, count(invoiceId) as invoiceCount from sales  group by fyYear,groupId,clientId ) s" +
-			" left outer join (select fyYear,groupId,sum(partPymt) as sumPartPymt from partPayment p where invoiceId in (select invoiceId from sales where clientId in (:clientId) and groupId =(:groupId))group by fyYear,groupId) p " +
+			" left outer join (select fyYear,groupId,sum(partPymt) as sumPartPymt from partPayment p where invoiceId in (select invoiceId from sales where clientId in (:clientId) and groupId =(:groupId) and fyYear = (:fyyear))group by fyYear,groupId) p " +
 			"on s.fyYear =p.fyYear and s.groupId=p.groupId) where s.fyYear= (:fyyear) and s.groupId = (:groupId)";
 	
 	if(clientIds!=null && clientIds.size()>0) {
@@ -172,9 +172,7 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 		sqlQuery = sqlQuery +" and s.clientId in (:clientId)";
 	}
 	
-	
-		
-		Map<String,Object> resultSet =  namedJdbcTemplate.query(sqlQuery, parameters, new ResultSetExtractor<Map<String,Object>>(){
+	Map<String,Object> resultSet =  namedJdbcTemplate.query(sqlQuery, parameters, new ResultSetExtractor<Map<String,Object>>(){
 
 					@Override
 					public Map<String, Object> extractData(ResultSet rs)
