@@ -3,7 +3,9 @@ package com.alkefp.sales.dao;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import com.alkefp.sales.beans.User;
 import com.alkefp.sales.dao.rowmapper.FYRowMapper;
 import com.alkefp.sales.dao.rowmapper.PartPaymentMapper;
 import com.alkefp.sales.dao.rowmapper.SaleSummaryRowMapper;
+import com.alkefp.sales.vo.MonthlySales;
 
 @Component
 public class SummaryDao {
@@ -239,6 +242,8 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 				new java.sql.Date(saleSumamry.getInvoiceDate().getTime()),saleSumamry.getDetails(),saleSumamry.getInvoiceId(),saleSumamry.getFyYearId(),groupId});
 		System.out.println(val);
 	}
+    
+    
 	
 	public void insertPartPayment(final List<PartPayment> partPayments,final String groupId){
 
@@ -269,4 +274,55 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 			 System.out.println(i);
 		 }
 		}
+	
+	public List<MonthlySales>  getMonthlySales(Date startDate, Date endDate, int fyYear) {
+		
+		List<MonthlySales> sales = null;
+		
+		String startDateStr = this.getFormattedDate(startDate);
+		String endDateStr = this.getFormattedDate(endDate);
+		
+		if(startDateStr !=null && endDateStr!=null ) {
+	    
+			String monthlySalesSQL = "select distinct s.invoiceId,c.clientName,c.address,c.gstNo,totalAmt,billAmt,invoiceDate,cgst,sgst,igst from "+
+		"(select invoiceId,fyYear,clientId,totalAmt,billAmt,invoiceDate from sales where  (invoiceDate BETWEEN ? AND ? )) s "+
+		 "left outer join invoice_item i on s.invoiceId = i.invoiceId and s.fyYear = i.fyYear join "+ 
+		 "client c on c.clientId = s.clientId where i.fyYear = ? order by invoiceDate, invoiceId";
+	
+	      sales = jdbcTemplate.query(monthlySalesSQL, new Object[]{startDateStr,endDateStr,fyYear}, new RowMapper<MonthlySales>(){
+
+			@Override
+			public MonthlySales mapRow(ResultSet rs, int arg1)
+					throws SQLException {
+				
+				MonthlySales sale = new MonthlySales();
+				sale.setInvoiceId(rs.getString("invoiceId"));
+				sale.setClientName(rs.getString("clientName"));
+				sale.setGstNo(rs.getString("gstNo"));
+				sale.setInvoiceDate(rs.getDate("invoiceDate"));
+				sale.setAddress(rs.getString("address"));
+				sale.setTotalBill(rs.getDouble("totalAmt"));
+				sale.setBillAmount(rs.getDouble("billAmt"));
+				sale.setCgst(rs.getDouble("cgst"));
+				sale.setIgst(rs.getDouble("igst"));
+				sale.setSgst(rs.getDouble("sgst"));
+				return sale;
+			}
+	    	  
+	      });
+		}
+	    return sales;
+	}
+	
+	
+	private String getFormattedDate(Date date) {
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");
+		if (date!=null) {
+		
+			return sdf.format(date);
+		}
+		return null;
+	}
+	
 }

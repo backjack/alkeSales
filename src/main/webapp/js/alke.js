@@ -282,16 +282,30 @@ $(document).ready(function(){
 	
 	
 $("#home").hide();
+$("#utility").hide();
 
 $('#pg2').click(function() {
 
 	$("#sales").hide();
 	$('#pg2').parent().addClass("active");
 	$('#homeMenu').parent().removeClass("active");
+	$('#pg3').parent().removeClass("active");
 	//$("#jsGrid").jsGrid("refresh");
+	$("#utility").hide();
 	$("#home").show();
 	$("#jsGrid").jsGrid("refresh");
 	
+});
+
+$("#pg3").click(function(){
+
+	$("#home").hide();
+	$("#utility").show();
+	$("#sales").hide();
+	$('#pg3').parent().addClass("active");
+	$('#homeMenu').parent().removeClass("active");
+	$('#pg2').parent().removeClass("active");
+
 });
 
 
@@ -307,14 +321,44 @@ $('#logout').click(function() {
      });
 });
 
+$('#exportMonthlySales').click(function(){
+	
+	 $("#utility").LoadingOverlay("show",
+ 			{image:load_image,color:"rgba(255, 255, 255, 0.6)",zIndex:1150});
+   	var selectBox = $('#selectYr option:selected').val();
+
+   	var selectMonth = $('#selectMonth option:selected').val();
+   	var selectMonthText = $('#selectMonth option:selected').text();
+   	
+   	var request = new XMLHttpRequest();
+   	request.open("POST", "/home/monthly/xls/"+selectBox+"/"+selectMonth,true);
+   	request.setRequestHeader("Content-Type", "application/json;charset=UTF-8");
+   	request.responseType = "blob";
+   	request.onload = function() {
+   	
+   	  $("#utility").LoadingOverlay("hide");
+   	  var blob=new Blob([this.response],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+   	    
+         var link=document.createElement('a');
+         link.href=window.URL.createObjectURL(blob);
+
+         link.download="MonthlySales_"+selectMonthText +".xlsx";
+         link.click();
+       
+   	 }
+   	request.send(undefined);
+	
+});
 
 $('#homeMenu').click(function() {
 	
 
 	$('#homeMenu').parent().addClass("active");
 	$('#pg2').parent().removeClass("active");
+	$('#pg3').parent().removeClass("active");
 	$("#sales").show();
 	$("#home").hide();
+	$("#utility").hide();
 	$("#jsGrid").jsGrid("refresh");
 
 });
@@ -332,18 +376,24 @@ $('#homeMenu').click(function() {
 		 
 		 }).fail(function (jqXHR, textStatus, errorThrown) {
 		        if (jqXHR.status === 401) { // HTTP Status 401: Unauthorized
-		         
-		            window.location = '/login.html';
-		 
+		        	alert('Neeraj, we have a problem...');
+		            
 		        } else {
-		            alert('Neeraj, we have a problem...');
+		        	 window.location = '/login.html';
+		            
 		        }
 		    }).done(function (data, textStatus, jqXHR) {
 		       
-		    	var currentYear = 2017;
+		    	var currentYear;
 		    	var month = new Date().getMonth();
 		    	var year = new Date().getFullYear();
-
+		    	if(month< 3 ) {
+		    		
+		    		currentYear = year+1;
+		    	}
+		    	else {
+		    		currentYear = year
+		    	}
 		    	   if(data['success']) {  
 					     var fyYears = data['data'];
 					     var outputfYyears = new Array(2);
@@ -359,6 +409,7 @@ $('#homeMenu').click(function() {
 					     
 					      yearCombo.val(currentYear);
 					      formYrCombo.val(currentYear);
+					      
 					      $("#fyFormGroup").append(formYrCombo);	 
 					      $("#jsGrid").jsGrid('loadData');	
 						  d.resolve($("#selectYr"));
@@ -369,7 +420,8 @@ $('#homeMenu').click(function() {
 						  buildchart($('#main'));*/
 						} else {
 							  
-							alert("something wrong")
+							console.log("something wrong");
+							window.location = '/login.html';
 			     }
 
 		    });

@@ -1,6 +1,8 @@
 package com.alkefp.sales.controller;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -92,6 +94,10 @@ public class DashBoardController {
 		
 		
 	}
+	
+	
+	
+	
 	
 	@RequestMapping(value = "/partpayment", method = RequestMethod.POST)
 
@@ -213,4 +219,30 @@ public class DashBoardController {
 		return fyResponse;
 	}
 	
+	
+	@RequestMapping(value = "/monthly/xls/{year}/{month}", method = RequestMethod.POST,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
+	public void downloadMonhtlySales(@PathVariable("year") int year,@PathVariable("month") int month, HttpServletResponse response) {
+		
+		// User user = getUser();
+		try {
+			 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+	         response.addHeader("Content-Disposition", "attachment; filename=\"monthysales.xlsx\"");
+	         Calendar startCal = Calendar.getInstance();
+	         startCal.set(2018,month, 1);
+	         
+	         Calendar endCal = Calendar.getInstance();
+	         endCal.set(2018,month, 31);
+	      
+	         String monthText = new SimpleDateFormat("MMM").format(startCal.getTime());
+	         
+	         xlsBuilder.buildMonthlySales(startCal.getTime(), endCal.getTime(), year,monthText, response);
+	         response.getOutputStream().flush();
+	         response.getOutputStream().close();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+		
 }
