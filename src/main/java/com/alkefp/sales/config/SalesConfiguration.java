@@ -26,9 +26,12 @@ public class SalesConfiguration {
 		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
 	
 		String url = System.getenv().get("url");
+		url = "jdbc:mysql://sql11.freesqldatabase.com:3306/sql11217907";
 		dataSource.setUrl(url);
 		String user = System.getenv().get("user");
 		String password = System.getenv().get("password");
+		password = "9vZ28K6SIM";
+		user = "sql11217907";
 		dataSource.setUsername(user);
 		dataSource.setPassword(password);
 		return dataSource;
