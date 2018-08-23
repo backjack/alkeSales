@@ -315,6 +315,41 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 	}
 	
 	
+	public Map<String,Long>  getMonthlyTaxes(Date startDate, Date endDate, int fyYear, String groupId) {
+		
+		String startDateStr = this.getFormattedDate(startDate);
+		String endDateStr = this.getFormattedDate(endDate);
+		
+		String sql = "select sum(rate * qty * sgst/100) as sgst,sum(rate * qty *igst/100) as igst," +
+				"sum(rate * qty *cgst/100) as cgst from invoice_item  where invoiceId in" +
+				" (select invoiceId from sales where fyYear=? and groupId=? and invoiceDate between ? and ?) and fyYear=? and groupId=?";
+		
+		return jdbcTemplate.query(sql, new Object[]{fyYear,groupId,startDateStr,endDateStr,fyYear,groupId}, new ResultSetExtractor<Map<String,Long>>(){
+
+			@Override
+			public Map<String, Long> extractData(ResultSet rs)
+					throws SQLException, DataAccessException {
+				
+						Map<String, Long> map = new HashMap<String, Long>();
+						if (rs.next()) {
+
+							Double sgst = rs.getDouble("sgst");
+							Double igst = rs.getDouble("igst");
+							Double cgst = rs.getDouble("cgst");
+							map.put("sgst", Math.round(sgst));
+							map.put("igst", Math.round(igst));
+							map.put("cgst", Math.round(cgst));
+							Long total = Math.round(sgst) + Math.round(igst) + Math.round(cgst);
+							map.put("total", total);
+						}
+						return map;
+			}
+			
+		});
+        
+				
+	}
+	
 	private String getFormattedDate(Date date) {
 		
 		SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd");

@@ -135,11 +135,10 @@
 	background-color:#E8E8E8
 }
 
-#main1 {
+#utility {
 	
 	height:90vh;
 	background-color:#E8E8E8;
-	margin-left:0.5em;
 }
 
 .opengallery {
@@ -171,7 +170,7 @@
     background-color: #258ecd;
 }
 
-.label {
+.label1 {
 	text-align: left;
 	padding-top:1.5em;
 	padding-left:1.5em;
@@ -181,6 +180,10 @@
     display: block;
     transition: 0.3s;
     font-weight: 300 !important;
+}
+
+.tax-label {
+    font-size: 1.10em;
 }
 
 .gallery {

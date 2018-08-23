@@ -349,12 +349,13 @@ $(document).ready(function () {
 		request.send(undefined);
 
 	});
-
-	$("#viewMonthlySales").click(function () {
-
+	
+	
+	$('#selectMonth').change(function(){
+		clearMonthlySalesTable();
 		$("#monthlyInvoiceBody").empty();
-		$("#utility").LoadingOverlay("show",
-			{ image: load_image, color: "rgba(255, 255, 255, 0.6)", zIndex: 1150 });
+		//$("#utility").LoadingOverlay("show",
+			//{ image: load_image, color: "rgba(255, 255, 255, 0.6)", zIndex: 1150 });
 		var selectBox = $('#selectYr option:selected').val();
 
 		var selectMonth = $('#selectMonth option:selected').val();
@@ -369,17 +370,14 @@ $(document).ready(function () {
 
 
 		}).fail(function (jqXHR, textStatus, errorThrown) {
-
+			$("#utility").hide();
 			alert("neeraj there is issue")
 		}).done(function (res, textStatus, jqXHR) {
 
-			if (res['success']) {
+			//$("#utility").hide();
+			if (res !== undefined && res.length>0) {
 
-				$("#utility").hide();
-				var data = res['data'];
-
-				if (data !== undefined) {
-					data.forEach(function (val) {
+					res.forEach(function (val) {
 
 						var row = "<tr>";
 						row = row+"<th  scope='row'>"+val['invoiceId']+"</th>";
@@ -396,7 +394,6 @@ $(document).ready(function () {
 
 						$("#monthlyInvoiceBody").append(row);
 					})
-				}
 
 
 			}
@@ -404,12 +401,38 @@ $(document).ready(function () {
 		});
 
 
+		$.ajax({
+			url: "/utility/monthly/taxes/" + selectBox + "/" + selectMonth,
+			cache: false,
+			contentType: 'application/json',
+			dataType: 'JSON',
+			method: 'GET'
+
+
+		}).fail(function (jqXHR, textStatus, errorThrown) {
+			$("#utility").hide();
+			alert("neeraj there is issue")
+		}).done(function (res, textStatus, jqXHR) {
+
+			//$("#utility").hide();
+			if (res !== undefined) {
+
+				var total = res['total'];
+				var igst = res['igst'];
+				var cgst = res['cgst'];
+				var sgst = res['sgst'];
+
+				$("#totalTxBdge").text(numberWithCommas(total));
+				$("#sgstTxBdge").text(numberWithCommas(sgst));
+				$("#cgstTxBdge").text(numberWithCommas(cgst));
+				$("#igstTxBdge").text(numberWithCommas(igst));
+
+			}
+
+		});
+
 	});
-	
-	clearMonthlySalesTable() {
-		
-		$("#monthlyInvoiceBody").empty();
-	}
+
 
 	$('#homeMenu').click(function () {
 
@@ -1450,36 +1473,6 @@ $(document).ready(function () {
 
 
 
-	/*var ctx2 = document.getElementById("salesFig");
-	ctx2.width  = 400;
-	ctx2.height = 200;
-	var myDoughnutChart = new Chart(ctx2, {
-    type: 'doughnut',
-	animation:{
-        animateScale:true
-    },
-    data :{
-    labels: [
-        "Unpaid",
-        "Expected",
-        "Paid"
-    ],
-    datasets: [
-        {
-            data: [300, 50, 100],
-            backgroundColor: [
-                "#FF6384",
-                "#36A2EB",
-                "#FFCE56"
-            ],
-            hoverBackgroundColor: [
-                "#FF6384",
-                "#36A2EB",
-                "#FFCE56"
-            ]
-        }]
-	}
-});*/
 
 	$("#editItems").click(function () {
 		diableItems(false);
@@ -1548,3 +1541,12 @@ function clearItems() {
 	$("#buyerOrderDate").val('');
 }
 
+
+function clearMonthlySalesTable() {
+	
+	$("#monthlyInvoiceBody").empty();
+}
+
+const numberWithCommas = (x) => {
+	  return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+	}

@@ -51,4 +51,18 @@ public class UtilityController {
 	 
 	   return sales;
 	}
+   
+    @RequestMapping(value = "/monthly/taxes/{year}/{month}", method = RequestMethod.GET,produces = "application/json")
+	public Map<String,Long> getMontlyTaxes(@PathVariable("year") int year,@PathVariable("month") int month) {
+		
+	   User user = getUser();
+	   Calendar startCal = Calendar.getInstance();
+       startCal.set(2018,month, 1);
+       
+       Calendar endCal = Calendar.getInstance();
+       endCal.set(2018,month, 31);
+	   Map<String,Long> taxes = summaryDao.getMonthlyTaxes(startCal.getTime(), endCal.getTime(), year,user.getGroupId());
+	 
+	   return taxes;
+	}
 }

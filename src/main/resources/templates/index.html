@@ -346,23 +346,23 @@
 				<h4>Gallery</h4>
 			</span>
 			<div id="yrlyPerformance" class="menu-selected">
-				<span class="label">Sales By Month</span>
+				<span class="label1">Sales By Month</span>
 			</div>
 			<div id="salesPer" class="menu-selected">
-				<span class="label">Sales By Client</span>
+				<span class="label1">Sales By Client</span>
 			</div>
 			<div id="yearly" class="menu">
-				<span class="label">Total Sales</span>
+				<span class="label1">Total Sales</span>
 			</div>
 
 		</div>
 		<div id="main"></div>
 	</div>
 
-	<div class="row" id="utility">
+	<div class="container-fluid"  id="utility">
 
-		<div id="main1">
-			<div>
+
+		     <div class="col-md-7">
 				<h3 style="margin-left:1em">Monthly Sales Report</h3>
                <div class="form-inline" style="margin-left:1em">
 				<div class="form-group">
@@ -386,11 +386,18 @@
 				<div class="form-group">
 					<label class="control-label"></label>
 						<button id='exportMonthlySales' class="btn btn-info">Download</button>
-						<button id='viewMonthlySales' class="btn btn-info">View</button>
 				</div>
+				
+				</div>
+				</div>
+				<div class="col-md-5" style="display:inline;margin-top: 4em;">
+				      <span class="tax-label label label-primary">Total <span id="totalTxBdge" class="badge">0</span></span>
+				      <span class="tax-label label label-primary">SGST <span id="sgstTxBdge" class="badge">0</span></span>
+				      <span class="tax-label label label-primary">CGST <span id="cgstTxBdge" class="badge">0</span></span>
+				      <span class="tax-label label label-primary">IGST <span id="igstTxBdge" class="badge">0</span></span>
 				</div>
 				<div  class="col-md-12 col-sm-12"
-					style="overflow-y: scroll; height: 400px;margin-top:10px;">
+					style="overflow-y: scroll; height: 450px;margin-top:10px;">
 					<table class="table table-striped table-bordered">
 						<thead>
 							<tr>
@@ -411,10 +418,6 @@
 					</table>
 				</div>
 			</div>
-		</div>
-	</div>
-
-
 </body>
 
 </html>
