@@ -223,7 +223,7 @@ public class DashBoardController {
 	@RequestMapping(value = "/monthly/xls/{year}/{month}", method = RequestMethod.POST,produces = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
 	public void downloadMonhtlySales(@PathVariable("year") int year,@PathVariable("month") int month, HttpServletResponse response) {
 		
-		// User user = getUser();
+		User user = getUser();
 		try {
 			 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	         response.addHeader("Content-Disposition", "attachment; filename=\"monthysales.xlsx\"");

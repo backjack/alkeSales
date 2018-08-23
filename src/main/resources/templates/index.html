@@ -2,381 +2,418 @@
 <html lang="en">
 
 <head>
-      <title>ALKE Analytics</title>
-      <link rel="stylesheet" href="css/bootstrap.min.css" />
-      <link type="text/css" rel="stylesheet" href="css/alke.css" />
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.0/css/bootstrap-select.min.css"/>
-      <link href="//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet" />
-      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.css" />
-      <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid.min.css" />
-      <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid-theme.min.css" />
-      <link rel="stylesheet" type="text/css" href="//fonts.googleapis.com/css?family=Lato" />
-      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
-      <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
-      <script src="js/bootstrap.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.0/js/bootstrap-select.min.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.js"></script>
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
-      <script src="js/loadingoverlay.js"></script>
-      <!-- <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap2-toggle.min.css" rel="stylesheet"/>
+<title>ALKE Analytics</title>
+ <meta name="viewport" content="width=device-width, initial-scale=1"/>
+<link rel="stylesheet" href="css/bootstrap.min.css" />
+<link type="text/css" rel="stylesheet" href="css/alke.css" />
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.0/css/bootstrap-select.min.css" />
+<link
+	href="//netdna.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css"
+	rel="stylesheet" />
+<link rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.css" />
+<link type="text/css" rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid.min.css" />
+<link type="text/css" rel="stylesheet"
+	href="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid-theme.min.css" />
+<link rel="stylesheet" type="text/css"
+	href="//fonts.googleapis.com/css?family=Lato" />
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript"
+	src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/jquery-ui.min.js"></script>
+<script src="js/bootstrap.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.12.0/js/bootstrap-select.min.js"></script>
+<script type="text/javascript"
+	src="https://cdnjs.cloudflare.com/ajax/libs/jsgrid/1.5.2/jsgrid.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui-touch-punch/0.2.3/jquery.ui.touch-punch.min.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.bundle.js"></script>
+<script
+	src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.3.0/Chart.min.js"></script>
+<script src="js/loadingoverlay.js"></script>
+<!-- <link href="https://gitcdn.github.io/bootstrap-toggle/2.2.2/css/bootstrap2-toggle.min.css" rel="stylesheet"/>
          <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.2/js/bootstrap2-toggle.min.js"></script> -->
-      <script src="js/alke.js"></script>
+<script src="js/alke.js"></script>
 </head>
 
 <body>
-      <div id="menu">
-            <nav class="navbar navbar-inverse navbar-static-top">
-                  <div class="container-fluid">
-                        <div class="navbar-header">
-                              <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
-                                    <span class="icon-bar"></span>
-                                    <span class="icon-bar"></span>
-                                    <span class="icon-bar"></span>
-                              </button>
-                              <a class="navbar-brand active" href="#">ALKE Analytics</a>
-                        </div>
-                        <div class="collapse navbar-collapse" id="myNavbar">
-                              <ul class="nav navbar-nav">
-                                    <li class="active">
-                                          <a id="homeMenu" href="#">
-                                                <span class="glyphicon glyphicon-home">
-                                                      <span style="padding-left: 5px; font-family: Lato;">Home</span>
-                                                </span>
-                                          </a>
-                                    </li>
-                                    <li>
-                                          <a id="pg2" href="#">
-                                                <span class="glyphicon glyphicon-signal">
-                                                      <span style="padding-left: 5px; font-family: Lato;">Sales</span>
-                                                </span>
-                                          </a>
-                                    </li>
-                                    <li>
-                                          <a id="pg3" href="#">
-                                                <span class="glyphicon glyphicon-tasks">
-                                                      <span style="padding-left: 5px; font-family: Lato;">Utility</span>
-                                                </span>
-                                          </a>
-                                    </li>
-                                    <li>
-                                          <a id="pg4" href="#">
-                                                <span class="glyphicon glyphicon-signal">
-                                                      <span style="padding-left: 5px; font-family: Lato;">Payments</span>
-                                                </span>
-                                          </a>
-                                    </li>
-                              </ul>
-                              <ul class="nav navbar-nav navbar-right">
-                                    <li style="margin-top: 0.5em; width: 200px !important">
-                                          <span id="testPick13">
-                                                <select id="selectYr" class=" form-control" name="selectYr" style="width: 150px !important">
-                                                </select>
-                                          </span>
-                                    </li>
-                                    <li>
-                                          <a href="#">
-                                                <span class="glyphicon glyphicon-user"></span>
-                                                <span id="salute"></span>
-                                          </a>
-                                    </li>
-                                    <li>
-                                          <a href="#" id="logout">
-                                                <span class="glyphicon glyphicon-log-in"></span> Logout</a>
-                                    </li>
-                              </ul>
-                        </div>
-                  </div>
-            </nav>
-      </div>
-      <div class="container-fluid" id="sales">
-            <h3>Overview</h3>
-            <div id="overview" class="row watchItemRow">
-                  <div id="salesSummary" class="col-xs-6 col-md-3 watchitem" style="background-color: #40c4ff">
-                        <span class="glyphicon glyphicon-shopping-cart watchItemText">
-                              <center style="font-family: Lato;">Sales</center>
-                        </span>
-                  </div>
-                  <div id="payReceived" class="col-xs-6 col-md-3 watchitem" style="background-color: #40c4ff">
-                        <span class="glyphicon glyphicon-usd watchItemText">
-                              <center style="font-family: Lato;">Collected</center>
-                        </span>
-                  </div>
-                  <div id="payPending" class="col-xs-6 col-md-3 watchitem" style="background-color: #40c4ff">
-                        <span class="glyphicon  glyphicon-fire watchItemText">
-                              <center style="font-family: Lato;">Pending</center>
-                        </span>
-                  </div>
-                  <div id="invoiceCount" class="col-xs-6 col-md-3 watchitem" style="background-color: #40c4ff">
-                        <span class="glyphicon  glyphicon-fire watchItemText">
-                              <center style="font-family: Lato;">No of Invoices</center>
-                        </span>
-                  </div>
-            </div>
-            <!-- Dummy row as seperator  -->
-            <div class="row" style="margin-bottom: 1em">
-                  <div class="col-xs-2 col-md-1"></div>
-            </div>
-            <div id="jsgrid" class="row" style="background-color: #E8E8E8">
-                  <div class="col-xs-12 col-md-12">
-                        <div id='invoiceGrid' class='panel panel-primary' style="margin-top: 1em">
-                              <div class='panel-heading '>
-                                    <span class="glyphicon glyphicon-th">
-                                          <span style="padding-left: 5px; font-family: Lato;">Sales</span>
-                                    </span>
-                                    <span id="invoiceToolbar" style='float: right'>
-                                          <select id="clientNameFilter" data-style="btn-default clientNameFilter" data-width="150" class="selectpicker">
-                                                <!-- 	<option>Gumpro</option>
+	<div id="menu">
+		<nav class="navbar navbar-inverse navbar-static-top">
+			<div class="container-fluid">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse"
+						data-target="#myNavbar">
+						<span class="icon-bar"></span> <span class="icon-bar"></span> <span
+							class="icon-bar"></span>
+					</button>
+					<a class="navbar-brand active" href="#">ALKE Analytics</a>
+				</div>
+				<div class="collapse navbar-collapse" id="myNavbar">
+					<ul class="nav navbar-nav">
+						<li class="active"><a id="homeMenu" href="#"> <span
+								class="glyphicon glyphicon-home"> <span
+									style="padding-left: 5px; font-family: Lato;">Home</span>
+							</span>
+						</a></li>
+						<li><a id="pg2" href="#"> <span
+								class="glyphicon glyphicon-signal"> <span
+									style="padding-left: 5px; font-family: Lato;">Sales</span>
+							</span>
+						</a></li>
+						<li><a id="pg3" href="#"> <span
+								class="glyphicon glyphicon-tasks"> <span
+									style="padding-left: 5px; font-family: Lato;">Utility</span>
+							</span>
+						</a></li>
+						<li><a id="pg4" href="#"> <span
+								class="glyphicon glyphicon-signal"> <span
+									style="padding-left: 5px; font-family: Lato;">Payments</span>
+							</span>
+						</a></li>
+					</ul>
+					<ul class="nav navbar-nav navbar-right">
+						<li style="margin-top: 0.5em; width: 200px !important"><span
+							id="testPick13"> <select id="selectYr"
+								class=" form-control" name="selectYr"
+								style="width: 150px !important">
+							</select>
+						</span></li>
+						<li><a href="#"> <span class="glyphicon glyphicon-user"></span>
+								<span id="salute"></span>
+						</a></li>
+						<li><a href="#" id="logout"> <span
+								class="glyphicon glyphicon-log-in"></span> Logout
+						</a></li>
+					</ul>
+				</div>
+			</div>
+		</nav>
+	</div>
+	<div class="container-fluid" id="sales">
+		<h3>Overview</h3>
+		<div id="overview" class="row watchItemRow">
+			<div id="salesSummary" class="col-xs-6 col-md-3 watchitem"
+				style="background-color: #40c4ff">
+				<span class="glyphicon glyphicon-shopping-cart watchItemText">
+					<center style="font-family: Lato;">Sales</center>
+				</span>
+			</div>
+			<div id="payReceived" class="col-xs-6 col-md-3 watchitem"
+				style="background-color: #40c4ff">
+				<span class="glyphicon glyphicon-usd watchItemText">
+					<center style="font-family: Lato;">Collected</center>
+				</span>
+			</div>
+			<div id="payPending" class="col-xs-6 col-md-3 watchitem"
+				style="background-color: #40c4ff">
+				<span class="glyphicon  glyphicon-fire watchItemText">
+					<center style="font-family: Lato;">Pending</center>
+				</span>
+			</div>
+			<div id="invoiceCount" class="col-xs-6 col-md-3 watchitem"
+				style="background-color: #40c4ff">
+				<span class="glyphicon  glyphicon-fire watchItemText">
+					<center style="font-family: Lato;">No of Invoices</center>
+				</span>
+			</div>
+		</div>
+		<!-- Dummy row as seperator  -->
+		<div class="row" style="margin-bottom: 1em">
+			<div class="col-xs-2 col-md-1"></div>
+		</div>
+		<div id="jsgrid" class="row" style="background-color: #E8E8E8">
+			<div class="col-xs-12 col-md-12">
+				<div id='invoiceGrid' class='panel panel-primary'
+					style="margin-top: 1em">
+					<div class='panel-heading '>
+						<span class="glyphicon glyphicon-th"> <span
+							style="padding-left: 5px; font-family: Lato;">Sales</span>
+						</span> <span id="invoiceToolbar" style='float: right'> <select
+							id="clientNameFilter" data-style="btn-default clientNameFilter"
+							data-width="150" class="selectpicker">
+								<!-- 	<option>Gumpro</option>
                               <option>EMG</option>
                               <option>Test</option> -->
-                                          </select>
-                                          <button id="downloadXls" type='button' class='btn btn-info'>Download
-                                          </button>
-                                          <button id="salesGridRefresh1" type='button' class='close'>
-                                                <span class=" glyphicon glyphicon-refresh white-icon"></span>
-                                          </button>
-                                    </span>
-                              </div>
-                              <div class='panel-body' style="padding: 0">
-                                    <div id="jsGrid" style="height: 90vh"></div>
-                              </div>
-                        </div>
-                  </div>
-            </div>
-            <div id="paymentRowMobile" class="row visible-xs visible-sm" style="background-color: #E8E8E8;margin-top:10px">
-                  <div id="accordion" class="panel-group">
-                        <div id="accordionPanel" class="panel panel-default">
-                              <div id="accordionPanelHeading" class="panel-heading">
-                                    <h4 class="panel-title">
-                                          <a id="partPayTitle" data-toggle="collapse" data-parent="#accordion" data-target="#collapse1">PartPayment</a>
-                                    </h4>
-                              </div>
-                              <div id="collapse1" class="panel-collapse collapse">
-                                    <!--  <div id="invoiceDetailGrid"></div> -->
-                              </div>
-                        </div>
-                  </div>
-            </div>
-            <div id="invoiceItemRowMobile" class="row visible-xs visible-sm" style="background-color: #E8E8E8;margin-top:10px">
-                  <div id="accordionItem" class="panel-group">
-                        <div id="accordionItemPanel" class="panel panel-default">
-                              <div id="accordionItemHeading" class="panel-heading">
-                                    <h4 class="panel-title">
-                                          <a id="itemTitle" data-toggle="collapse" href="#collapse2">Sale Details</a>
-                                    </h4>
-                              </div>
-                              <div id="collapse2" class="panel-collapse collapse">
-                                    <div id="invoicedetailContainer">
+						</select>
+							<button id="downloadXls" type='button' class='btn btn-info'>Download
+							</button>
+							<button id="salesGridRefresh1" type='button' class='close'>
+								<span class=" glyphicon glyphicon-refresh white-icon"></span>
+							</button>
+						</span>
+					</div>
+					<div class='panel-body' style="padding: 0">
+						<div id="jsGrid" style="height: 90vh"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="paymentRowMobile" class="row visible-xs visible-sm"
+			style="background-color: #E8E8E8; margin-top: 10px">
+			<div id="accordion" class="panel-group">
+				<div id="accordionPanel" class="panel panel-default">
+					<div id="accordionPanelHeading" class="panel-heading">
+						<h4 class="panel-title">
+							<a id="partPayTitle" data-toggle="collapse"
+								data-parent="#accordion" data-target="#collapse1">PartPayment</a>
+						</h4>
+					</div>
+					<div id="collapse1" class="panel-collapse collapse">
+						<!--  <div id="invoiceDetailGrid"></div> -->
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="invoiceItemRowMobile" class="row visible-xs visible-sm"
+			style="background-color: #E8E8E8; margin-top: 10px">
+			<div id="accordionItem" class="panel-group">
+				<div id="accordionItemPanel" class="panel panel-default">
+					<div id="accordionItemHeading" class="panel-heading">
+						<h4 class="panel-title">
+							<a id="itemTitle" data-toggle="collapse" href="#collapse2">Sale
+								Details</a>
+						</h4>
+					</div>
+					<div id="collapse2" class="panel-collapse collapse">
+						<div id="invoicedetailContainer">
 
-                                          <div style="width:95%;margin-left:20px; margin-top:10px;margin-bottom:10px">
-                                                <div class="panel panel-primary">
-                                                      <div class='panel-heading'>
-                                                            <span class="glyphicon glyphicon-th">
-                                                                  <span style="padding-left: 5px; font-family: Lato;">Items</span>
-                                                            </span>
-                                                            <button id="itemRefresh" type='button' class='close' style='float: right'>
-                                                                  <span class=" glyphicon glyphicon-refresh"></span>
-                                                            </button>
-                                                      </div>
-                                                      <div id="collapse2Item" class='panel-body' style="padding: 0">
-                                                            <!-- <div id="invoiceitem"></div> -->
-                                                      </div>
-                                                </div>
-                                          </div>
-                                    </div>
-                              </div>
-                        </div>
-                  </div>
-            </div>
-      </div>
-      <!-- Modal -->
-      <div id="invoiceDetails" class="modal fade" role="dialog">
-            <div class="modal-dialog">
-                  <!-- Modal content-->
-                  <div class="modal-content" style="height: 600px !important">
-                        <div class="modal-header">
-                              <button type="button" class="close" data-dismiss="modal">&times;</button>
-                        </div>
-                        <div id="invoiceDetailBody" class="modal-body">
-                              <ul class="nav nav-tabs">
-                                    <li class="active">
-                                          <a data-toggle="tab" href="#invoicedetail">Invoice Details
-                                          </a>
-                                    </li>
-                                    <li>
-                                          <a data-toggle="tab" href="#partpayment">Part Payment
-                                          </a>
-                                    </li>
-                              </ul>
-                              <div class="tab-content">
-                                    <div id="partpayment" class="tab-pane fade  ">
-                                          <div class=" panel panel-primary" style="height: 300px !important;margin-top:20px">
-                                                <div class='panel-heading'>
-                                                      <span class="glyphicon glyphicon-th">
-                                                            <span style="padding-left: 5px; font-family: Lato;">PartPayment</span>
-                                                      </span>
-                                                      <button id="partpaymentGridRefresh" type='button' class='close' style='float: right'>
-                                                            <span class=" glyphicon glyphicon-refresh white-icon"></span>
-                                                      </button>
-                                                </div>
-                                                <div id="partpaymentBody" class='panel-body' style="padding: 0">
-                                                      <div id="invoiceDetailGrid"></div>
-                                                </div>
-                                          </div>
-                                    </div>
-                                    <div id="invoicedetail" class="tab-pane fade in active">
-                                          <div id="invoicedetailContainer1" class="container col-md-12">
-                                                <div class="row">
-                                                      <div class="col-sm-12 col-md-12">
-                                                            <div class="panel panel-primary">
-                                                                  <div class='panel-heading'>
-                                                                        <span class="glyphicon glyphicon-th">
-                                                                              <span style="padding-left: 5px; font-family: Lato;">Items</span>
-                                                                        </span>
-                                                                        <button id="itemRefresh" type='button' class='close' style='float: right'>
-                                                                              <span class=" glyphicon glyphicon-refresh"></span>
-                                                                        </button>
-                                                                  </div>
-                                                                  <div id="itemBody" class='panel-body' style="padding: 0">
-                                                                        <div id="invoiceitem"></div>
-                                                                  </div>
-                                                            </div>
-                                                      </div>
-                                                </div>
-                                          </div>
-                                    </div>
-                              </div>
-                              <!--  -->
-                        </div>
-                        <!-- 	<div class="modal-footer">
+							<div
+								style="width: 95%; margin-left: 20px; margin-top: 10px; margin-bottom: 10px">
+								<div class="panel panel-primary">
+									<div class='panel-heading'>
+										<span class="glyphicon glyphicon-th"> <span
+											style="padding-left: 5px; font-family: Lato;">Items</span>
+										</span>
+										<button id="itemRefresh" type='button' class='close'
+											style='float: right'>
+											<span class=" glyphicon glyphicon-refresh"></span>
+										</button>
+									</div>
+									<div id="collapse2Item" class='panel-body' style="padding: 0">
+										<!-- <div id="invoiceitem"></div> -->
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div id="invoiceDetails" class="modal fade" role="dialog">
+		<div class="modal-dialog">
+			<!-- Modal content-->
+			<div class="modal-content" style="height: 600px !important">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal">&times;</button>
+				</div>
+				<div id="invoiceDetailBody" class="modal-body">
+					<ul class="nav nav-tabs">
+						<li class="active"><a data-toggle="tab" href="#invoicedetail">Invoice
+								Details </a></li>
+						<li><a data-toggle="tab" href="#partpayment">Part Payment
+						</a></li>
+					</ul>
+					<div class="tab-content">
+						<div id="partpayment" class="tab-pane fade  ">
+							<div class=" panel panel-primary"
+								style="height: 300px !important; margin-top: 20px">
+								<div class='panel-heading'>
+									<span class="glyphicon glyphicon-th"> <span
+										style="padding-left: 5px; font-family: Lato;">PartPayment</span>
+									</span>
+									<button id="partpaymentGridRefresh" type='button' class='close'
+										style='float: right'>
+										<span class=" glyphicon glyphicon-refresh white-icon"></span>
+									</button>
+								</div>
+								<div id="partpaymentBody" class='panel-body' style="padding: 0">
+									<div id="invoiceDetailGrid"></div>
+								</div>
+							</div>
+						</div>
+						<div id="invoicedetail" class="tab-pane fade in active">
+							<div id="invoicedetailContainer1" class="container col-md-12">
+								<div class="row">
+									<div class="col-sm-12 col-md-12">
+										<div class="panel panel-primary">
+											<div class='panel-heading'>
+												<span class="glyphicon glyphicon-th"> <span
+													style="padding-left: 5px; font-family: Lato;">Items</span>
+												</span>
+												<button id="itemRefresh" type='button' class='close'
+													style='float: right'>
+													<span class=" glyphicon glyphicon-refresh"></span>
+												</button>
+											</div>
+											<div id="itemBody" class='panel-body' style="padding: 0">
+												<div id="invoiceitem"></div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!--  -->
+				</div>
+				<!-- 	<div class="modal-footer">
                   <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
                   </div> -->
-                  </div>
-            </div>
-      </div>
-      <!-- Modal -->
-      <div id="addInvoice" class="modal fade" role="dialog">
-            <div class="modal-dialog" style="width: 500px !important">
-                  <!-- Modal content-->
-                  <div class="modal-content" style="height: 510px !important">
-                        <div class="modal-header">
-                              <h4>
-                                    <span style="display: block">
-                                          <i class="glyphicon glyphicon-file white-icon">
-                                                <span style="padding-left: 5px; font-family: Lato; color:white">Add Invoice</span>
-                                          </i>
-                                          <button type="button" class="close" data-dismiss="modal">&times;</button>
-                                    </span>
-                              </h4>
-                        </div>
-                        <div class="modal-body">
-                              <form id="form4" class="form-horizontal">
-                                    <div class="form-group">
-                                          <label class="col-sm-3 control-label" for="pwd">FY</label>
-                                          <div id="fyFormGroup" class="col-sm-7 col-md-7">
-                                                <select id="formSelectYr" class=" form-control" name="selectYr" style="width: 150px !important">
-                                                </select>
-                                          </div>
-                                    </div>
-                                    <div class="form-group">
-                                          <label class="col-sm-3 control-label" for="invoice">InvoiceId</label>
-                                          <div class="col-sm-7 col-md-7">
-                                                <input type="text" class="form-control" id="invoice" placeholder="Enter Invoice" value="AFP/INV/" />
-                                          </div>
-                                    </div>
-                                    <div class="form-group">
-                                          <label class="col-sm-3 control-label">ClientName</label>
-                                          <div id="clientFormGroup" class="col-sm-7 col-md-7"></div>
-                                    </div>
-                                    <div class="form-group">
-                                          <label class="col-sm-3 control-label" for="pwd">Pay Days</label>
-                                          <div class="col-sm-7 col-md-7">
-                                                <input type="text" class="form-control" id="paymentDays" placeholder="Enter No of Payment Days" />
-                                          </div>
-                                    </div>
-                                    <div class="form-group">
-                                          <label for="invoiceDate" class="col-sm-3 control-label">Invoice Date
-                                          </label>
-                                          <div class="col-sm-7 col-md-6">
-                                                <input type="date" id="invoiceDate" class="form-control" />
-                                          </div>
-                                    </div>
-                                    <div class="form-group">
-                                          <label for="Notes" class="col-sm-3 control-label">Notes</label>
-                                          <div class="col-sm-7 col-md-7">
-                                                <textarea class="form-control" rows="3" id="notes"></textarea>
-                                          </div>
-                                    </div>
-                                    <div class="form-group">
-                                          <div class="col-md-offset-7 col-sm-offset-7">
-                                                <button id="addInvoiceBtn" type="button" class="btn btn-primary">Submit</button>
-                                                <button id="closeInvoiceBtn" type="button" class="btn btn-warning" style="margin-left:5px:">Close</button>
-                                          </div>
-                                    </div>
-                              </form>
-                        </div>
-                  </div>
-            </div>
-      </div>
-      <div class="row" id="home">
-            <div id="mySidenav" class="sidenav " style="width: 0; top: 20em; position: absolute;">
-                  <span class="glyphicon glyphicon-remove white-icon" style="margin-right: 10px; float: right;" onclick="closeNav()"></span>
-                  <span class="gallery">
-                        <h4>Gallery</h4>
-                  </span>
-                  <div id="yrlyPerformance" class="menu-selected">
-                        <span class="label">Sales By Month</span>
-                  </div>
-                  <div id="salesPer" class="menu-selected">
-                        <span class="label">Sales By Client</span>
-                  </div>
-                  <div id="yearly" class="menu">
-                        <span class="label">Total Sales</span>
-                  </div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div id="addInvoice" class="modal fade" role="dialog">
+		<div class="modal-dialog" style="width: 500px !important">
+			<!-- Modal content-->
+			<div class="modal-content" style="height: 510px !important">
+				<div class="modal-header">
+					<h4>
+						<span style="display: block"> <i
+							class="glyphicon glyphicon-file white-icon"> <span
+								style="padding-left: 5px; font-family: Lato; color: white">Add
+									Invoice</span>
+						</i>
+							<button type="button" class="close" data-dismiss="modal">&times;</button>
+						</span>
+					</h4>
+				</div>
+				<div class="modal-body">
+					<form id="form4" class="form-horizontal">
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="pwd">FY</label>
+							<div id="fyFormGroup" class="col-sm-7 col-md-7">
+								<select id="formSelectYr" class=" form-control" name="selectYr"
+									style="width: 150px !important">
+								</select>
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="invoice">InvoiceId</label>
+							<div class="col-sm-7 col-md-7">
+								<input type="text" class="form-control" id="invoice"
+									placeholder="Enter Invoice" value="AFP/INV/" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label">ClientName</label>
+							<div id="clientFormGroup" class="col-sm-7 col-md-7"></div>
+						</div>
+						<div class="form-group">
+							<label class="col-sm-3 control-label" for="pwd">Pay Days</label>
+							<div class="col-sm-7 col-md-7">
+								<input type="text" class="form-control" id="paymentDays"
+									placeholder="Enter No of Payment Days" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="invoiceDate" class="col-sm-3 control-label">Invoice
+								Date </label>
+							<div class="col-sm-7 col-md-6">
+								<input type="date" id="invoiceDate" class="form-control" />
+							</div>
+						</div>
+						<div class="form-group">
+							<label for="Notes" class="col-sm-3 control-label">Notes</label>
+							<div class="col-sm-7 col-md-7">
+								<textarea class="form-control" rows="3" id="notes"></textarea>
+							</div>
+						</div>
+						<div class="form-group">
+							<div class="col-md-offset-7 col-sm-offset-7">
+								<button id="addInvoiceBtn" type="button" class="btn btn-primary">Submit</button>
+								<button id="closeInvoiceBtn" type="button"
+									class="btn btn-warning" style="margin-left: 5px:">Close</button>
+							</div>
+						</div>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="row" id="home">
+		<div id="mySidenav" class="sidenav "
+			style="width: 0; top: 20em; position: absolute;">
+			<span class="glyphicon glyphicon-remove white-icon"
+				style="margin-right: 10px; float: right;" onclick="closeNav()"></span>
+			<span class="gallery">
+				<h4>Gallery</h4>
+			</span>
+			<div id="yrlyPerformance" class="menu-selected">
+				<span class="label">Sales By Month</span>
+			</div>
+			<div id="salesPer" class="menu-selected">
+				<span class="label">Sales By Client</span>
+			</div>
+			<div id="yearly" class="menu">
+				<span class="label">Total Sales</span>
+			</div>
 
-            </div>
-            <div id="main"></div>
-      </div>
+		</div>
+		<div id="main"></div>
+	</div>
 
-      <div class="row" id="utility">
+	<div class="row" id="utility">
 
-            <div id="main">
-                  <div style ="margin:20px">
-                  <h2> Monthly Sales Report</h2>
-                  <hr></hr>
+		<div id="main1">
+			<div>
+				<h3 style="margin-left:1em">Monthly Sales Report</h3>
+               <div class="form-inline" style="margin-left:1em">
+				<div class="form-group">
+					<label class="control-label">Month</label>
+						<select id="selectMonth" class="form-control" name="selectMonth"
+							style="width: 150px !important">
+							<option value="0">Jan</option>
+							<option value="1">Feb</option>
+							<option value="2">Mar</option>
+							<option value="3">Apr</option>
+							<option value="4">May</option>
+							<option value="5">Jun</option>
+							<option value="6">Jul</option>
+							<option value="7">Aug</option>
+							<option value="8">Sep</option>
+							<option value="9">Oct</option>
+							<option value="10">Nov</option>
+							<option value="11">Dec</option>
+						</select>
+				</div>
+				<div class="form-group">
+					<label class="control-label"></label>
+						<button id='exportMonthlySales' class="btn btn-info">Download</button>
+						<button id='viewMonthlySales' class="btn btn-info">View</button>
+				</div>
+				</div>
+				<div  class="col-md-12 col-sm-12"
+					style="overflow-y: scroll; height: 400px;margin-top:10px;">
+					<table class="table table-striped table-bordered">
+						<thead>
+							<tr>
+								<th scope="col">Invoice Id</th>
+								<th scope="col">ClientName</th>
+								<th scope="col">Address</th>
+								<th scope="col">GST no</th>
+								<th scope="col">Total Amount</th>
+								<th scope="col">Bill Amount</th>
+								<th scope="col">Invoice Date</th>
+								<th scope="col">CGST</th>
+								<th scope="col">SGST</th>
+								<th scope="col">IGST</th>
+							</tr>
+						</thead>
+						<tbody id="monthlyInvoiceBody">
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
 
-
-                        <div class="form-group">
-                              <label class="col-sm-1 control-label">Month</label>
-                              <div class="col-sm-9 col-md-9">
-                                    <select id="selectMonth" class="form-control" name="selectMonth" style="width: 150px !important">
-                                          <option value="0">Jan</option>
-                                          <option value="1">Feb</option>
-                                          <option value="2">Mar</option>
-                                          <option value="3">Apr</option>
-                                          <option value="4">May</option>
-                                          <option value="5">Jun</option>
-                                          <option value="6">Jul</option>
-                                          <option value="7">Aug</option>
-                                          <option value="8">Sep</option>
-                                          <option value="9">Oct</option>
-                                          <option value="10">Nov</option>
-                                          <option value="11">Dec</option>
-                                    </select>
-                              </div>
-                        </div>
-                        <div class="form-group">
-                            <label class="col-sm-1 control-label"></label>
-                            <div class="col-sm-9 col-md-9">
-                                <button id='exportMonthlySales' class="btn btn-info">Download</button>
-                              </div>
-                        </div>
-    
-            </div>
-            </div>
-      </div>
-    
 
 </body>
 

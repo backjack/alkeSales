@@ -30,7 +30,7 @@ public class SalesConfiguration {
 		dataSource.setUrl(url);
 		String user = System.getenv().get("user");
 		String password = System.getenv().get("password");
-
+		
 		dataSource.setUsername(user);
 		dataSource.setPassword(password);
 		return dataSource;

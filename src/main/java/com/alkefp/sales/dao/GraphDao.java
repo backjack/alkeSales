@@ -31,9 +31,9 @@ public class GraphDao {
     public List<ClientSales> getClientSales(int fyYear,String groupId) {
     	
     	
-    	String sqlQuery = "select a.fyyear,c.shortName,c.clientId,c.clientName, totalAmt,partPayment from ((select s.fyyear,clientId, sum(totalAmt) as totalAmt,sum(partPymt) as partPayment,s.groupId from partPayment p right join sales s on s.invoiceId=p.invoiceId and s.fyyear = p.fyyear and s.groupId = p.groupId group by clientId,fyyear,groupId) a join client c on a.clientId= c.clientId and a.groupId= c.groupId and a.fyyear= ? and a.groupId=?)";
+    	String sqlQuery = "select shortName,totalAmt,partPayment,a.fyYear,a.clientId,a.groupId from(select fyYear, groupId, clientId,sum(totalAmt) as totalAmt from sales where fyYear=2018 and groupId = ? group by fyYear, groupId, clientId) a left join (select p.fyYear, p.groupId, clientId,sum(partPymt) as partPayment from partPayment p join sales s on p.invoiceId = s.invoiceId and p.fyYear= s.fyYear and p.groupId = s.groupId where p.fyYear=? and p.groupId =? group by fyYear, groupId, clientId) b  on a.fyYear=b.fyYear and a.groupId=b.groupId and a.clientId = b.clientId join client cl on cl.clientid= b.clientId and cl.groupId= b.groupId";
     	
-    	List<ClientSales> clientSales = jdbcTemplate.query(sqlQuery,new Object[]{fyYear,groupId}, new RowMapper<ClientSales>(){
+    	List<ClientSales> clientSales = jdbcTemplate.query(sqlQuery,new Object[]{groupId,fyYear,groupId}, new RowMapper<ClientSales>(){
 
 			@Override
 			public ClientSales mapRow(ResultSet rs, int arg1)
