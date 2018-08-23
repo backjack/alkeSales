@@ -31,9 +31,9 @@ public class GraphDao {
     public List<ClientSales> getClientSales(int fyYear,String groupId) {
     	
     	
-    	String sqlQuery = "select shortName,totalAmt,partPayment,a.fyYear,a.clientId,a.groupId from(select fyYear, groupId, clientId,sum(totalAmt) as totalAmt from sales where fyYear=2018 and groupId = ? group by fyYear, groupId, clientId) a left join (select p.fyYear, p.groupId, clientId,sum(partPymt) as partPayment from partPayment p join sales s on p.invoiceId = s.invoiceId and p.fyYear= s.fyYear and p.groupId = s.groupId where p.fyYear=? and p.groupId =? group by fyYear, groupId, clientId) b  on a.fyYear=b.fyYear and a.groupId=b.groupId and a.clientId = b.clientId join client cl on cl.clientid= b.clientId and cl.groupId= b.groupId";
+    	String sqlQuery = "select shortName,totalAmt,partPayment,a.fyYear,a.clientId,a.groupId from(select fyYear, groupId, clientId,sum(totalAmt) as totalAmt from sales where fyYear=? and groupId = ? group by fyYear, groupId, clientId) a left join (select p.fyYear, p.groupId, clientId,sum(partPymt) as partPayment from partPayment p join sales s on p.invoiceId = s.invoiceId and p.fyYear= s.fyYear and p.groupId = s.groupId where p.fyYear=? and p.groupId =? group by fyYear, groupId, clientId) b  on a.fyYear=b.fyYear and a.groupId=b.groupId and a.clientId = b.clientId join client cl on cl.clientid= b.clientId and cl.groupId= b.groupId";
     	
-    	List<ClientSales> clientSales = jdbcTemplate.query(sqlQuery,new Object[]{groupId,fyYear,groupId}, new RowMapper<ClientSales>(){
+    	List<ClientSales> clientSales = jdbcTemplate.query(sqlQuery,new Object[]{fyYear,groupId,fyYear,groupId}, new RowMapper<ClientSales>(){
 
 			@Override
 			public ClientSales mapRow(ResultSet rs, int arg1)
