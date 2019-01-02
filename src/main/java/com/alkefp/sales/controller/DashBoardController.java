@@ -228,10 +228,16 @@ public class DashBoardController {
 			 response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 	         response.addHeader("Content-Disposition", "attachment; filename=\"monthysales.xlsx\"");
 	         Calendar startCal = Calendar.getInstance();
-	         startCal.set(2018,month, 1);
+
+			int calcYear = year;
+			if(month<3) {
+				calcYear = calcYear+1;
+			}
+
+			startCal.set(calcYear,month, 1);
 	         
 	         Calendar endCal = Calendar.getInstance();
-	         endCal.set(2018,month, 31);
+	         endCal.set(calcYear,month, 31);
 	      
 	         String monthText = new SimpleDateFormat("MMM").format(startCal.getTime());
 	         

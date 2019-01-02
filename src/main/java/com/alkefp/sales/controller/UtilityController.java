@@ -41,13 +41,15 @@ public class UtilityController {
 	   User user = getUser();
 	   Calendar startCal = Calendar.getInstance();
 
+	   int calcYear = year;
 	   if(month<3) {
-	   	year = year+1;
+		   calcYear = calcYear+1;
 	   }
-       startCal.set(year,month, 1);
+
+       startCal.set(calcYear,month, 1);
        
        Calendar endCal = Calendar.getInstance();
-       endCal.set(year,month, 31);
+       endCal.set(calcYear,month, 31);
     
 	   List<MonthlySales> sales = summaryDao.getMonthlySales(startCal.getTime(), endCal.getTime(), year);
 	 
@@ -59,13 +61,15 @@ public class UtilityController {
 		
 	   User user = getUser();
 	   Calendar startCal = Calendar.getInstance();
+		int calcYear = year;
 		if(month<3) {
-			year = year+1;
+			calcYear = calcYear+1;
 		}
-       startCal.set(year,month, 1);
+
+       startCal.set(calcYear,month, 1);
        
        Calendar endCal = Calendar.getInstance();
-       endCal.set(year,month, 31);
+       endCal.set(calcYear,month, 31);
 	   Map<String,Long> taxes = summaryDao.getMonthlyTaxes(startCal.getTime(), endCal.getTime(), year,user.getGroupId());
 	 
 	   return taxes;
