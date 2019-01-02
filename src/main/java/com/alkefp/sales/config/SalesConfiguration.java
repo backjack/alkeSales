@@ -8,9 +8,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-public class SalesConfiguration {
+public class SalesConfiguration extends WebMvcConfigurerAdapter {
 	
 	private String url ;
 	private String port;
@@ -24,15 +27,10 @@ public class SalesConfiguration {
 
 		DriverManagerDataSource  dataSource = new DriverManagerDataSource();
 		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-	
 		String url = System.getenv().get("url");
-		url = "jdbc:mysql://sql11.freesqldatabase.com:3306/sql11217907";
-
 		dataSource.setUrl(url);
 		String user = System.getenv().get("user");
 		String password = System.getenv().get("password");
-		password = "9vZ28K6SIM";
-		user = "sql11217907";
 		dataSource.setUsername(user);
 		dataSource.setPassword(password);
 		return dataSource;
@@ -89,5 +87,9 @@ public class SalesConfiguration {
 
 	public void setDatabase(String database) {
 		this.database = database;
+	}
+
+	public void addInterceptors(InterceptorRegistry registry) {
+		registry.addInterceptor(new LoggingInterceptor()).addPathPatterns("/**");
 	}
 }
