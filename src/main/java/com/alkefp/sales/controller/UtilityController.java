@@ -40,6 +40,10 @@ public class UtilityController {
 		
 	   User user = getUser();
 	   Calendar startCal = Calendar.getInstance();
+
+	   if(month<3) {
+	   	year = year+1;
+	   }
        startCal.set(year,month, 1);
        
        Calendar endCal = Calendar.getInstance();
@@ -55,6 +59,9 @@ public class UtilityController {
 		
 	   User user = getUser();
 	   Calendar startCal = Calendar.getInstance();
+		if(month<3) {
+			year = year+1;
+		}
        startCal.set(year,month, 1);
        
        Calendar endCal = Calendar.getInstance();
