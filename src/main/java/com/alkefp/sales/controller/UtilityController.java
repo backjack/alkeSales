@@ -1,10 +1,8 @@
 package com.alkefp.sales.controller;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Map;
-
+import com.alkefp.sales.beans.User;
+import com.alkefp.sales.dao.SummaryDao;
+import com.alkefp.sales.vo.MonthlySales;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alkefp.sales.beans.User;
-import com.alkefp.sales.dao.SummaryDao;
-import com.alkefp.sales.vo.MonthlySales;
+import java.util.Calendar;
+import java.util.List;
+import java.util.Map;
 
 
 @RestController
@@ -42,10 +40,10 @@ public class UtilityController {
 		
 	   User user = getUser();
 	   Calendar startCal = Calendar.getInstance();
-       startCal.set(2018,month, 1);
+       startCal.set(year,month, 1);
        
        Calendar endCal = Calendar.getInstance();
-       endCal.set(2018,month, 31);
+       endCal.set(year,month, 31);
     
 	   List<MonthlySales> sales = summaryDao.getMonthlySales(startCal.getTime(), endCal.getTime(), year);
 	 
@@ -57,10 +55,10 @@ public class UtilityController {
 		
 	   User user = getUser();
 	   Calendar startCal = Calendar.getInstance();
-       startCal.set(2018,month, 1);
+       startCal.set(year,month, 1);
        
        Calendar endCal = Calendar.getInstance();
-       endCal.set(2018,month, 31);
+       endCal.set(year,month, 31);
 	   Map<String,Long> taxes = summaryDao.getMonthlyTaxes(startCal.getTime(), endCal.getTime(), year,user.getGroupId());
 	 
 	   return taxes;
