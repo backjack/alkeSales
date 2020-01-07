@@ -473,7 +473,7 @@ $(document).ready(function () {
 		var year = new Date().getFullYear();
 		if (month < 3) {
 
-			currentYear = year + 1;
+			currentYear = year - 1;
 		}
 		else {
 			currentYear = year
