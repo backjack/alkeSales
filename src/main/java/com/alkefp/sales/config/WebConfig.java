@@ -1,20 +1,17 @@
 package com.alkefp.sales.config;
 
+import com.alkefp.sales.security.RESTAuthenticationSuccessHandler;
+import com.alkefp.sales.security.RestAuthenticationFailureHandler;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-
-import com.alkefp.sales.security.RESTAuthenticationEntryPoint;
-import com.alkefp.sales.security.RESTAuthenticationSuccessHandler;
-import com.alkefp.sales.security.RestAuthenticationFailureHandler;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Configuration
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
 public class WebConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
@@ -22,13 +19,13 @@ public class WebConfig extends WebSecurityConfigurerAdapter {
 	
 	@Autowired
 	private RestAuthenticationFailureHandler restAuthenticationFailureHandler;
-	
-	
+
+
 	@Autowired
-	private JdbcTemplate  jdbcTemplate;
+	private UserDetailsService userService;
 	
 	
-	
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		
@@ -54,20 +51,21 @@ public class WebConfig extends WebSecurityConfigurerAdapter {
 		 http.formLogin().failureHandler(restAuthenticationFailureHandler);
 		
 	}
+
+//	@Bean
+//	public BCryptPasswordEncoder passwordEncoder() {
+//		return new BCryptPasswordEncoder();
+//	}
 	
 	@Autowired
-	public void configureAuthentication(AuthenticationManagerBuilder auth) throws Exception {
+	public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
 
-	
-		auth.jdbcAuthentication().dataSource(jdbcTemplate.getDataSource()).usersByUsernameQuery(
-				"select username, password,'true' from user_profile where username =?"
-				).authoritiesByUsernameQuery("select username,'USER' from user_profile where username =?");
+
+		auth.userDetailsService(userService).passwordEncoder(new BCryptPasswordEncoder());
+//						("select username,'USER' from user_profile where username =?");
 	}
-	
-	 /*@Override
-	    public void addViewControllers(ViewControllerRegistry registry) {
-	        registry.addViewController("/login.html").setViewName("login");
-	        registry.setOrder(Ordered.HIGHEST_PRECEDENCE);
-	    }*/
+
+
+
 
 }
