@@ -10,10 +10,9 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
 
 @Configuration
-public class SalesConfiguration extends WebMvcConfigurerAdapter {
+public class SalesConfiguration implements WebMvcConfigurer {
 	
 	private String url ;
 	private String port;
@@ -26,11 +25,11 @@ public class SalesConfiguration extends WebMvcConfigurerAdapter {
 	public DataSource dataSource() {
 
 		DriverManagerDataSource  dataSource = new DriverManagerDataSource();
-		dataSource.setDriverClassName("com.mysql.jdbc.Driver");
-		String url = System.getenv().get("url");
+		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		String url = System.getenv("url");
 		dataSource.setUrl(url);
-		String user = System.getenv().get("user");
-		String password = System.getenv().get("password");
+		String user = System.getenv("user");
+		String password = System.getenv("password");
 		dataSource.setUsername(user);
 		dataSource.setPassword(password);
 		return dataSource;
