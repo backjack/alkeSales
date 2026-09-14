@@ -13,7 +13,7 @@ export class InvoicesComponent implements OnInit {
   private readonly api = inject(SalesApiService);
   private readonly cd = inject(ChangeDetectorRef);
   years: Option[] = []; clients: Option[] = []; clientRecords: Client[] = []; itemRecords: InvoiceItem[] = []; invoices: SaleSummary[] = [];
-  year = 0; client = 0; query = ''; loading = false; fyLoading = true; downloading = false;
+  year = 0; client = 0; month = 0; query = ''; loading = false; fyLoading = true; downloading = false;
   error = ''; message = ''; selected = new Set<string>();
   editorOpen = false; detailLoading = false; saving = false; creating = false; editing = false;
   editorError = ''; clientSearch = ''; clientChosen = false; itemQuery = ''; detail?: InvoiceDetail; summary?: SaleSummary;
@@ -56,7 +56,7 @@ export class InvoicesComponent implements OnInit {
   }
   get filtered() {
     const q = this.query.trim().toLowerCase();
-    return this.invoices.filter(x => !q || x.invoiceId.toLowerCase().includes(q) || x.clientName.toLowerCase().includes(q))
+    return this.invoices.filter(x => (!q || x.invoiceId.toLowerCase().includes(q) || x.clientName.toLowerCase().includes(q) || (x.details||'').toLowerCase().includes(q)) && (!this.month || new Date(x.invoiceDate).getMonth()+1 === this.month))
       .sort((a,b) => (+new Date(b.invoiceDate)- +new Date(a.invoiceDate)) || b.invoiceId.localeCompare(a.invoiceId,undefined,{numeric:true}));
   }
   key(x: SaleSummary) { return JSON.stringify([x.fyYearId,x.invoiceId]); }
@@ -84,7 +84,7 @@ export class InvoicesComponent implements OnInit {
       if(request!==this.detailRequest) return;
       this.summary={invoiceId:number.data,invoiceDate:this.dateValue(),clientName:'',clientId:0,fyYearId:this.year,
         fyYear:this.years.find(x=>x.key===this.year)?.value??'',totalAmt:0,payedAmt:0,payReceived:false,ragStatus:'',details:''};
-      this.detail={invoiceId:number.data,fyear:this.year,invoiceDate:this.summary.invoiceDate,client:{} as Client,items:[this.newItem()],
+      this.detail={invoiceId:number.data,fyear:this.year,invoiceDate:this.summary.invoiceDate,client:{} as Client,items:[],
         billAmount:0,taxAmount:0,grandTotal:0,deliveryDoc:'',deliveryDate:'',buyerDoc:'',buyerDocDate:'',destination:'',despatchedVia:''};
     } catch(e) { this.editorError=this.errorMessage(e,'Could not prepare the invoice. Close and try again.'); }
     finally { if(request===this.detailRequest) this.detailLoading=false; this.notify(); }
@@ -110,7 +110,7 @@ export class InvoicesComponent implements OnInit {
   private async fetchItems() { this.itemRecords=(await firstValueFrom(this.api.getItemOptions())).data ?? []; }
   itemMatches(item: InvoiceItem) { const q=(item.itemDescription||'').trim().toLowerCase(); return q.length<1 ? [] : this.itemRecords.filter(x=>x.itemDescription.toLowerCase().includes(q)).slice(0,10); }
   chooseItem(item: InvoiceItem, option: InvoiceItem) { item.itemDescription=option.itemDescription; item.hnsCode=option.hnsCode; item.tax=option.tax??0; item.cgst=option.cgst??0; item.sgst=option.sgst??0; item.igst=option.igst??0; }
-  get filteredItemCatalog() { const q=this.itemQuery.trim().toLowerCase(); return this.itemRecords.filter(x=>!q || x.itemDescription.toLowerCase().includes(q) || (x.hnsCode||'').toLowerCase().includes(q)); }
+  get filteredItemCatalog() { const q=this.itemQuery.trim().toLowerCase(); return q ? this.itemRecords.filter(x=>x.itemDescription.toLowerCase().includes(q) || (x.hnsCode||'').toLowerCase().includes(q)) : []; }
   addCatalogItem(option: InvoiceItem) { if(!this.detail) return; const item={...this.newItem(),itemDescription:option.itemDescription,hnsCode:option.hnsCode,tax:option.tax??0,cgst:option.cgst??0,sgst:option.sgst??0,igst:option.igst??0}; this.detail.items.push(item); this.itemQuery=''; }
   clientTyped() { this.clientChosen=false; if(this.summary) this.summary.clientId=0; }
   chooseClient(client: Client) {
