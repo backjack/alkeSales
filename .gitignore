@@ -3,5 +3,8 @@
 /target
 /.idea
 /.m2-repository
+/frontend/node_modules
+/frontend/dist
+/frontend/.angular
 /.settings
 .project

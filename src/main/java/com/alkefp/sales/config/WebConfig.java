@@ -23,9 +23,9 @@ public class WebConfig {
     @Bean
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
-                .requestMatchers("/css/**", "/js/**", "/download/**", "/login").permitAll()
-                .requestMatchers("/home/**", "/index/**", "/graph/**", "/index.html", "/client.html").authenticated()
-                .anyRequest().permitAll())
+                .requestMatchers("/css/**", "/js/**", "/img/**", "/download/**", "/login", "/favicon.ico", "/*.js", "/*.css").permitAll()
+                .requestMatchers("/", "/dashboard", "/invoices", "/clients", "/index/**", "/index.html", "/client.html", "/home/**", "/graph/**", "/client/**", "/invoice/**", "/utility/**").authenticated()
+                .anyRequest().authenticated())
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form.loginPage("/login")
                 .usernameParameter("username").passwordParameter("password")

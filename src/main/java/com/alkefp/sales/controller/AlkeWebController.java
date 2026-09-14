@@ -7,6 +7,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 @Controller
 public class AlkeWebController {
 
+	@GetMapping({"/", "/dashboard", "/invoices", "/clients"})
+	public String angularApp() {
+		return "forward:/index.html";
+	}
+
 	
 	@GetMapping("/index")
 	public String indexOf() {

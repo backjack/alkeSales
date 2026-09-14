@@ -1,5 +1,6 @@
 
 server:
+  port: ${PORT:8080}
   servlet:
     session:
       timeout: 10m

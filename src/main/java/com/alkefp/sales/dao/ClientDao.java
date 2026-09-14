@@ -28,7 +28,7 @@ public class ClientDao {
 	public List<Client> getClients(String groupId) {
 		
 		List<Client> clients = null;
-		clients = jdbcTemplate.query(GET_CLIENTS, new ClientRowMapper());
+		clients = jdbcTemplate.query(GET_CLIENTS, new ClientRowMapper(), groupId);
 		return clients;
 	}
 	

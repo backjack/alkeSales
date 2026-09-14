@@ -1,0 +1,7 @@
+{
+  "/home": { "target": "http://localhost:8080", "secure": false },
+  "/graph": { "target": "http://localhost:8080", "secure": false },
+  "/client": { "target": "http://localhost:8080", "secure": false },
+  "/login": { "target": "http://localhost:8080", "secure": false },
+  "/logout": { "target": "http://localhost:8080", "secure": false }
+}

@@ -132,8 +132,8 @@ public class SummaryDao {
 		
 		
 		
-		Map<String,Object> resultSet =  jdbcTemplate.query("select sumBill,sumPartPymt,s.fyYear,s.invoiceCount,s.groupId from" +
-				" ((select fyYear,groupId,sum(totalAmt) as sumBill, count(invoiceId) as invoiceCount from sales  group by fyYear,groupId ) s" +
+		Map<String,Object> resultSet =  jdbcTemplate.query("select sumBill,netRevenue,sumPartPymt,s.fyYear,s.invoiceCount,s.groupId from" +
+				" ((select fyYear,groupId,sum(totalAmt) as sumBill, sum(billAmt) as netRevenue, count(invoiceId) as invoiceCount from sales  group by fyYear,groupId ) s" +
 				" left outer join (select fyYear,groupId,sum(partPymt) as sumPartPymt from partPayment p group by fyYear,groupId) p " +
 				"on s.fyYear =p.fyYear and s.groupId=p.groupId) where s.fyYear= ? and s.groupId =?", new Object[]{fyYear,groupId}, new ResultSetExtractor<Map<String,Object>>(){
 
@@ -143,12 +143,14 @@ public class SummaryDao {
 					
 						Map<String, Object> output = new HashMap<String,Object>();
 						if(rs.next()) {
-							output.put("sumBill", rs.getDouble("sumBill"));
+						output.put("sumBill", rs.getDouble("sumBill"));
+						output.put("netRevenue", rs.getDouble("netRevenue"));
 							output.put("sumPartPymt", rs.getDouble("sumPartPymt"));
 							output.put("invoiceCount", rs.getInt("invoiceCount"));
 						}
 						else {
-							output.put("sumBill", 0);
+						output.put("sumBill", 0);
+						output.put("netRevenue", 0);
 							output.put("sumPartPymt", 0);
 							output.put("invoiceCount", 0);
 						}
@@ -165,8 +167,8 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 	MapSqlParameterSource parameters = new MapSqlParameterSource();
 	parameters.addValue("fyyear", fyYear);	
 	parameters.addValue("groupId", groupId);
-	String sqlQuery = "select sumBill,sumPartPymt,s.fyYear,s.invoiceCount,s.groupId from" +
-			" ((select clientId,fyYear,groupId,sum(totalAmt) as sumBill, count(invoiceId) as invoiceCount from sales  group by fyYear,groupId,clientId ) s" +
+	String sqlQuery = "select sum(sumBill) as sumBill,sum(netRevenue) as netRevenue,max(sumPartPymt) as sumPartPymt,sum(invoiceCount) as invoiceCount from" +
+			" ((select clientId,fyYear,groupId,sum(totalAmt) as sumBill, sum(billAmt) as netRevenue, count(invoiceId) as invoiceCount from sales  group by fyYear,groupId,clientId ) s" +
 			" left outer join (select fyYear,groupId,sum(partPymt) as sumPartPymt from partPayment p where invoiceId in (select invoiceId from sales where clientId in (:clientId) and groupId =(:groupId) and fyYear = (:fyyear))group by fyYear,groupId) p " +
 			"on s.fyYear =p.fyYear and s.groupId=p.groupId) where s.fyYear= (:fyyear) and s.groupId = (:groupId)";
 	
@@ -183,12 +185,14 @@ public Map<String,Object> getOverviewByClient(int fyYear,String groupId, List<In
 					
 						Map<String, Object> output = new HashMap<String,Object>();
 						if(rs.next()) {
-							output.put("sumBill", rs.getDouble("sumBill"));
+						output.put("sumBill", rs.getDouble("sumBill"));
+						output.put("netRevenue", rs.getDouble("netRevenue"));
 							output.put("sumPartPymt", rs.getDouble("sumPartPymt"));
 							output.put("invoiceCount", rs.getInt("invoiceCount"));
 						}
 						else {
-							output.put("sumBill", 0);
+						output.put("sumBill", 0);
+						output.put("netRevenue", 0);
 							output.put("sumPartPymt", 0);
 							output.put("invoiceCount", 0);
 						}
