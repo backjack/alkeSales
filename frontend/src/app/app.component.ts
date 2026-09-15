@@ -13,6 +13,7 @@ import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
           <a routerLink="/dashboard" routerLinkActive="active"><span>⌂</span> Dashboard</a>
           <a routerLink="/invoices" routerLinkActive="active"><span>▤</span> Invoices</a>
           <a routerLink="/clients" routerLinkActive="active"><span>♙</span> Clients</a>
+          <a routerLink="/analytics" routerLinkActive="active"><span>⌁</span> Analytics</a>
         </nav>
         <div class="sidebar-foot"><span class="avatar">NS</span><div><strong>Sales Admin</strong><small>ALKE Finance</small></div></div>
       </aside>

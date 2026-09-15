@@ -65,8 +65,10 @@ public class GraphDao {
     public   List<SalesByMonthDataSetVO> getSalesByMonth(int fyfyear,String groupId) {
     	
     	//String sqlQuery = "select  s.fmonth,s.fyYear,part, bill from((select month(payDate) as fmonth,fyYear,sum(partPymt) as part from partPayment p group by month(payDate),fyYear) a  right  join (select month(invoiceDate) as fmonth, fyYear,sum(totalAmt) as bill from sales p group by month(invoiceDate),fyYear) s on a.fmonth = s.fmonth and a.fyYear=s.fyYear) where s.fyYear =?";
-    	String sqlQuery ="(select month(payDate) as fmonth,fyYear,sum(partPymt) as amt,'part' as type from partPayment p where fyYear =? and groupId= ? group by fyYear,groupId,month(payDate) ) union all(select month(invoiceDate) as fmonth, fyYear,sum(totalAmt) as amt,'sales' as type from sales p  where fyYear =? and groupId= ? group by fyYear,groupId,month(invoiceDate))";
-    	List<SalesByMonthDataSetVO> salesByMonth = jdbcTemplate.query(sqlQuery,new Object[]{fyfyear,groupId,fyfyear,groupId}, new ResultSetExtractor<List<SalesByMonthDataSetVO>>(){
+		String sqlQuery ="(select month(payDate) as fmonth,fyYear,coalesce(sum(partPymt),0) as amt,'part' as type from partPayment p where fyYear =? and groupId= ? group by fyYear,groupId,month(payDate)) "
+				+ "union all (select month(invoiceDate) as fmonth,fyYear,coalesce(sum(totalAmt),0) as amt,'sales' as type from sales p where fyYear =? and groupId= ? group by fyYear,groupId,month(invoiceDate)) "
+				+ "union all (select month(invoiceDate) as fmonth,fyYear,coalesce(sum(billAmt),0) as amt,'netRevenue' as type from sales p where fyYear =? and groupId= ? group by fyYear,groupId,month(invoiceDate))";
+		List<SalesByMonthDataSetVO> salesByMonth = jdbcTemplate.query(sqlQuery,new Object[]{fyfyear,groupId,fyfyear,groupId,fyfyear,groupId}, new ResultSetExtractor<List<SalesByMonthDataSetVO>>(){
 
 			@Override
 			public  List<SalesByMonthDataSetVO> extractData(ResultSet rs)
@@ -80,12 +82,17 @@ public class GraphDao {
 				SalesByMonthDataSetVO paymentAmt = new SalesByMonthDataSetVO();
 				paymentAmt.setLabel("payment");
 				List<Double> payData = Lists.newArrayListWithCapacity(12);
+				SalesByMonthDataSetVO netRevenueAmt = new SalesByMonthDataSetVO();
+				netRevenueAmt.setLabel("netRevenue");
+				List<Double> netRevenueData = Lists.newArrayListWithCapacity(12);
 
 				for(int i=0;i<12;i++) {
 					payData.add(0d);
 					salesData.add(0d);
+					netRevenueData.add(0d);
 				}
 				paymentAmt.setData(payData);
+				netRevenueAmt.setData(netRevenueData);
 				while(rs.next()) {
 				
 					int month = rs.getInt("fmonth");
@@ -97,14 +104,16 @@ public class GraphDao {
 					}
 					int index = month -1; 
 					String type = rs.getString("type");
-					if(!"part".equalsIgnoreCase(type)) {
-					  salesData.set(index,rs.getDouble("amt"));
-					}
-					else {
+					if("part".equalsIgnoreCase(type)) {
 					   payData.set(index,rs.getDouble("amt"));
+					} else if("netRevenue".equalsIgnoreCase(type)) {
+					   netRevenueData.set(index,rs.getDouble("amt"));
+					} else {
+					   salesData.set(index,rs.getDouble("amt"));
 					}
 				}
 				salesBymonth.add(salesAmt);
+				salesBymonth.add(netRevenueAmt);
 				salesBymonth.add(paymentAmt);
 				
 				return salesBymonth;

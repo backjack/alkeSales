@@ -1,0 +1,70 @@
+<section class="page analytics-page">
+  <div class="page-heading">
+    <div><p class="eyebrow">Insights</p><h1>Revenue analytics</h1><p>Compare monthly and cumulative invoice revenue across financial years.</p></div>
+    <button class="primary" (click)="refresh()" [disabled]="loading">{{loading ? 'Refreshing…' : 'Refresh data'}}</button>
+  </div>
+
+  <div class="filter-bar" *ngIf="years.length">
+    <label>Financial year<select [(ngModel)]="selectedYear" (ngModelChange)="buildCharts()"><option *ngFor="let year of years" [ngValue]="year.key">{{year.value}}</option></select></label>
+    <span class="filter-note">April to March · values from invoice records</span>
+  </div>
+
+  <div class="loading" *ngIf="loading">Loading revenue analytics…</div>
+  <div class="error" *ngIf="error">{{error}}</div>
+
+  <ng-container *ngIf="!loading && !error">
+    <div class="analytics-metrics">
+      <article><small>Total revenue</small><strong>{{totalRevenue | currency:'INR':'symbol':'1.0-0'}}</strong><span>{{selectedYearLabel}} · including tax</span></article>
+      <article><small>Revenue post tax</small><strong>{{netRevenue | currency:'INR':'symbol':'1.0-0'}}</strong><span>{{selectedYearLabel}} · net taxable value</span></article>
+      <article><small>Tax component</small><strong>{{taxDifference | currency:'INR':'symbol':'1.0-0'}}</strong><span>Total revenue less post-tax revenue</span></article>
+    </div>
+
+    <div class="analytics-grid">
+      <article class="panel analytics-panel">
+        <div class="panel-head"><div><h2>Revenue by month</h2><p>Total and post-tax revenue for {{selectedYearLabel}}</p></div></div>
+        <div class="chart-legend"><span *ngFor="let series of monthlyChart.series"><i [style.background]="series.color"></i>{{series.label}}</span></div>
+        <ng-container *ngTemplateOutlet="lineChart; context: {$implicit: monthlyChart}"></ng-container>
+      </article>
+
+      <article class="panel analytics-panel">
+        <div class="panel-head"><div><h2>Cumulative revenue</h2><p>Running revenue through the selected financial year</p></div></div>
+        <div class="chart-legend"><span *ngFor="let series of cumulativeChart.series"><i [style.background]="series.color"></i>{{series.label}}</span></div>
+        <ng-container *ngTemplateOutlet="lineChart; context: {$implicit: cumulativeChart}"></ng-container>
+      </article>
+    </div>
+
+    <article class="panel analytics-panel comparison-panel">
+      <div class="panel-head">
+        <div><h2>Financial year comparison</h2><p>Compare the same month across every available financial year</p></div>
+        <div class="comparison-controls">
+          <label class="chart-select">Revenue measure<select [(ngModel)]="comparisonMetric" (ngModelChange)="buildComparisonChart()"><option value="total">Total revenue</option><option value="net">Revenue post tax</option></select></label>
+          <label class="chart-select">View<select [(ngModel)]="comparisonView" (ngModelChange)="buildComparisonChart()"><option value="monthly">Month by month</option><option value="cumulative">Cumulative</option></select></label>
+        </div>
+      </div>
+      <div class="comparison-years">
+        <strong>Financial years</strong>
+        <label *ngFor="let year of years" [class.selected]="comparisonYears.has(year.key)"><input type="checkbox" [checked]="comparisonYears.has(year.key)" (change)="toggleComparisonYear(year.key, $any($event.target).checked)">{{year.value}}</label>
+      </div>
+      <div class="chart-legend year-legend"><span *ngFor="let series of comparisonChart.series"><i [style.background]="series.color"></i>{{series.label}}</span></div>
+      <ng-container *ngTemplateOutlet="lineChart; context: {$implicit: comparisonChart}"></ng-container>
+    </article>
+  </ng-container>
+
+  <ng-template #lineChart let-chart>
+    <div class="line-chart" [class.is-empty]="chart.empty">
+      <svg viewBox="0 0 1000 360" role="img" aria-label="Revenue line chart">
+        <g *ngFor="let line of gridLines; let i=index" class="chart-grid">
+          <line x1="70" x2="970" [attr.y1]="gridY(i)" [attr.y2]="gridY(i)"></line>
+          <text x="60" [attr.y]="gridY(i)+4">{{money(gridValue(chart,i))}}</text>
+        </g>
+        <line class="chart-axis" x1="70" x2="970" y1="306" y2="306"></line>
+        <g *ngFor="let month of months; let i=index"><text class="month-label" [attr.x]="x(i)" y="340">{{month}}</text></g>
+        <g *ngFor="let series of chart.series">
+          <path class="series-line" [attr.d]="series.path" [attr.stroke]="series.color"></path>
+          <circle *ngFor="let point of series.points; let i=index" [attr.cx]="point.x" [attr.cy]="point.y" r="4" [attr.fill]="series.color"><title>{{series.label}} · {{months[i]}} · {{point.value | currency:'INR':'symbol':'1.0-0'}}</title></circle>
+        </g>
+      </svg>
+      <p *ngIf="chart.empty">No revenue recorded for this selection.</p>
+    </div>
+  </ng-template>
+</section>
