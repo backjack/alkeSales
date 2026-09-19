@@ -3,12 +3,13 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { MonthlySales, ClientSales, Option, Overview, SaleSummary, SalesApiService } from '../../core/sales-api.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  selector: 'app-dashboard', standalone: true, imports: [CommonModule, FormsModule],
+  selector: 'app-dashboard', standalone: true, imports: [CommonModule, FormsModule, RouterLink],
   template: `
   <section class="page">
-    <div class="page-heading"><div><p class="eyebrow">Overview</p><h1>Invoice dashboard</h1><p>Track billing performance and client revenue.</p></div><button class="primary" (click)="refresh()">Refresh data</button></div>
+    <div class="page-heading"><div><p class="eyebrow">Overview</p><h1>Invoice dashboard</h1><p>Track billing performance and client revenue.</p></div><div class="panel-actions"><button class="secondary" (click)="refresh()">Refresh data</button><a class="primary" routerLink="/invoices" [queryParams]="{create: '1'}">Create invoice</a></div></div>
     <div class="fy-loading" *ngIf="fyLoading"><span></span>Loading financial years…</div>
     <div class="filter-bar" *ngIf="!fyLoading">
       <label>Financial year<select [(ngModel)]="selectedYear" (ngModelChange)="refresh()"><option *ngFor="let year of years" [ngValue]="year.key">{{year.value}}</option></select></label>
