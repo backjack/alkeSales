@@ -14,9 +14,21 @@ import java.util.Locale;
 public class InvoicePdfBuilder {
     private static final Color INK=new Color(32,44,68);
     private static final Font TEXT=FontFactory.getFont(FontFactory.HELVETICA,9,Font.NORMAL,INK);
+    private static final Font HEADING=FontFactory.getFont(FontFactory.HELVETICA_BOLD,10,Font.NORMAL,INK);
+    private static final Font CLIENT=FontFactory.getFont(FontFactory.HELVETICA_BOLD,9,Font.NORMAL,INK);
+    private static final Font INVOICE_META=FontFactory.getFont(FontFactory.HELVETICA_BOLD,11,Font.NORMAL,INK);
+    private static final Font FOOTER_HEADING=FontFactory.getFont(FontFactory.HELVETICA_BOLD,8,Font.NORMAL,INK);
+    private static final Font FOOTER_TEXT=FontFactory.getFont(FontFactory.HELVETICA,8,Font.NORMAL,INK);
+    private static final Font FOOTER_ADDRESS=FontFactory.getFont(FontFactory.HELVETICA,7,Font.NORMAL,INK);
+    private static final String SUPPLIER_GST="27AAKCS1815L1Z2";
     private static String text(String value) { return value==null ? "" : value; }
-    private static String money(Double value) { return String.format(Locale.US,"%.2f",value==null?0:value); }
+    private static String money(Double value) { return String.format(Locale.US,"%,.2f",value==null?0:value); }
+    private static String percent(Double value) { return String.format(Locale.US,"%.2f",value==null?0:value); }
     private static String date(java.util.Date value) { return value==null?"-":new SimpleDateFormat("dd MMM yyyy").format(value); }
+    private static String taxAmount(Item item,Double rate) {
+        double base=item.getAmount()==null ? item.getRate()*item.getQuantity() : item.getAmount();
+        return money(base*(rate==null?0:rate)/100)+"\n("+percent(rate)+"%)";
+    }
     private void cell(PdfPTable table,String value,boolean heading) {
         PdfPCell cell=new PdfPCell(new Phrase(text(value),heading?FontFactory.getFont(FontFactory.HELVETICA_BOLD,9):TEXT));
         cell.setPadding(7); cell.setBorderColor(new Color(226,231,239));
@@ -33,30 +45,40 @@ public class InvoicePdfBuilder {
             }
         });
         document.open();
-        document.add(new Paragraph("ALKE",FontFactory.getFont(FontFactory.HELVETICA_BOLD,24,INK)));
-        Paragraph title=new Paragraph("INVOICE  /  "+invoice.getInvoiceId(),FontFactory.getFont(FontFactory.HELVETICA_BOLD,16,INK));
-        title.setSpacingAfter(10); document.add(title);
-        document.add(new Paragraph("Invoice date: "+date(invoice.getInvoiceDate())+"    Financial year: "+invoice.getFyear()+"-"+(invoice.getFyear()+1),TEXT));
+        Paragraph title=new Paragraph("TAX INVOICE",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK));
+        title.setAlignment(Element.ALIGN_CENTER); title.setSpacingAfter(6); document.add(title);
+        Paragraph invoiceMeta=new Paragraph("Invoice No.: "+invoice.getInvoiceId()+"\nInvoice date: "+date(invoice.getInvoiceDate())+"    Financial year: "+invoice.getFyear()+"-"+(invoice.getFyear()+1),INVOICE_META);
+        invoiceMeta.setAlignment(Element.ALIGN_LEFT); invoiceMeta.setSpacingAfter(8); document.add(invoiceMeta);
         Client client=invoice.getClient();
-        Paragraph recipient=new Paragraph("\nBILL TO\n"+text(client.getClientName())+"\n"+text(client.getAddress())+"\nGST: "+text(client.getGSTno()),TEXT);
-        recipient.setSpacingAfter(16); document.add(recipient);
+        Paragraph recipient=new Paragraph("BILL TO\n"+text(client.getClientName())+"\n"+text(client.getAddress())+"\nGST: "+text(client.getGSTno()),CLIENT);
+        recipient.setSpacingAfter(12); document.add(recipient);
         PdfPTable header=new PdfPTable(2); header.setWidthPercentage(100);
         cell(header,"Buyer order: "+text(invoice.getBuyerDoc()),false); cell(header,"Order date: "+date(invoice.getBuyerDocDate()),false);
         cell(header,"Delivery note: "+text(invoice.getDeliveryDoc()),false); cell(header,"Delivery date: "+date(invoice.getDeliveryDate()),false);
         cell(header,"Dispatched via: "+text(invoice.getDespatchedVia()),false); cell(header,"Destination: "+text(invoice.getDestination()),false);
-        header.setSpacingAfter(18); document.add(header);
-        PdfPTable items=new PdfPTable(new float[]{3.2f,1.2f,.7f,1.2f,1.2f,1.4f}); items.setWidthPercentage(100); items.setHeaderRows(1); items.setSplitLate(false);
-        for(String label:new String[]{"Description / taxes","HSN","Qty","Rate (INR)","Tax (INR)","Total (INR)"}) cell(items,label,true);
+        header.setSpacingAfter(14); document.add(header);
+        PdfPTable items=new PdfPTable(new float[]{2.7f,.9f,.55f,.9f,1f,1f,1f}); items.setWidthPercentage(100); items.setHeaderRows(1); items.setSplitLate(false);
+        for(String label:new String[]{"Description","HSN","Qty","Rate (INR)","CGST","SGST","IGST"}) cell(items,label,true);
         for(Item item:invoice.getItems()) {
-            cell(items,item.getItemDescription()+"\nCGST "+money(item.getCgst())+"% / SGST "+money(item.getSgst())+"%\nIGST "+money(item.getIgst())+"% / Other "+money(item.getTax())+"%",false);
+            cell(items,item.getItemDescription(),false);
             cell(items,item.getHnsCode(),false); cell(items,String.valueOf(item.getQuantity()),false); cell(items,money(item.getRate()),false);
-            cell(items,money(item.getTaxAmount()),false); cell(items,money(item.getTotalAmount()),false);
+            cell(items,taxAmount(item,item.getCgst()),false); cell(items,taxAmount(item,item.getSgst()),false); cell(items,taxAmount(item,item.getIgst()),false);
         }
         document.add(items);
         PdfPTable totals=new PdfPTable(2); totals.setWidthPercentage(55); totals.setHorizontalAlignment(Element.ALIGN_RIGHT); totals.setSpacingBefore(16); totals.setKeepTogether(true);
         cell(totals,"Subtotal (INR)",false); cell(totals,money(invoice.getBillAmount()),false);
         cell(totals,"Tax (INR)",false); cell(totals,money(invoice.getTaxAmount()),false);
         cell(totals,"Grand total (INR)",true); cell(totals,money(invoice.getGrandTotal()),true);
-        document.add(totals); document.close(); return bytes.toByteArray();
+        document.add(totals);
+        PdfPTable payment=new PdfPTable(1); payment.setWidthPercentage(100); payment.setSpacingBefore(10); payment.setKeepTogether(true);
+        PdfPCell paymentCell=new PdfPCell(); paymentCell.setPadding(6); paymentCell.setBorderColor(new Color(226,231,239));
+        Paragraph paymentDetails=new Paragraph();
+        paymentDetails.setLeading(9);
+        paymentDetails.add(new Chunk("Alke Fire Protection GST No.: "+SUPPLIER_GST+"\n",FOOTER_HEADING));
+        paymentDetails.add(new Chunk("Payment remitted to below: Alke Fire Protection | THE SARASWAT CO-OPERATIVE BANK LTD\n",FOOTER_HEADING));
+        paymentDetails.add(new Chunk("SHOP NO.1 & 15 BLOCK NO.1, EMERALD PLAZA, HIRANANDANI MEDOWS, OFF POKHARAN ROAD NO.2, THANE (WEST) - 400 610, Maharashtra\n",FOOTER_ADDRESS));
+        paymentDetails.add(new Chunk("Account Name: Alke Fire Protection    Account No.: 148100100000505    IFSC Code: SRCB0000148",FOOTER_TEXT));
+        paymentCell.addElement(paymentDetails); payment.addCell(paymentCell); document.add(payment);
+        document.close(); return bytes.toByteArray();
     }
 }

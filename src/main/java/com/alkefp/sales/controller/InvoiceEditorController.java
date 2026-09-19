@@ -55,10 +55,12 @@ public class InvoiceEditorController {
     @GetMapping("/items")
     public BaseResponse<List<Item>> items(Authentication auth) {
         String group=group(auth);
-        List<Item> result=jdbc.query("select item,HNS_code,max(tax) tax,max(cgst) cgst,max(sgst) sgst,max(igst) igst from invoice_item where groupId=? and item is not null and item<>'' group by item,HNS_code order by item", (rs,n)-> {
-            Item item=new Item(); item.setItemDescription(rs.getString("item")); item.setHnsCode(rs.getString("HNS_code")); item.setTax(rs.getDouble("tax")); item.setCgst((Double)rs.getObject("cgst")); item.setSgst((Double)rs.getObject("sgst")); item.setIgst((Double)rs.getObject("igst")); return item;
+        List<Item> historicalItems=jdbc.query("select ii.item,ii.HNS_code,ii.qty,ii.rate,ii.tax,ii.cgst,ii.sgst,ii.igst from invoice_item ii join sales s on s.invoiceId=ii.invoiceId and s.fyYear=ii.fyYear and s.groupId=ii.groupId where ii.groupId=? and ii.item is not null and ii.item<>'' order by ii.item,ii.HNS_code,s.invoiceDate desc,ii.id desc", (rs,n)-> {
+            Item item=new Item(); item.setItemDescription(rs.getString("item")); item.setHnsCode(rs.getString("HNS_code")); item.setQuantity(rs.getInt("qty")); item.setRate(rs.getDouble("rate")); item.setTax(rs.getDouble("tax")); item.setCgst((Double)rs.getObject("cgst")); item.setSgst((Double)rs.getObject("sgst")); item.setIgst((Double)rs.getObject("igst")); return item;
         }, group);
-        return response(result);
+        Map<String,Item> latestItems=new LinkedHashMap<>();
+        for(Item item:historicalItems) latestItems.putIfAbsent(item.getItemDescription()+"\u0000"+item.getHnsCode(),item);
+        return response(new ArrayList<>(latestItems.values()));
     }
     private void requireInvoice(Reference ref,String group) {
         if(ref==null || ref.invoiceId()==null || jdbc.queryForObject("select count(*) from sales where invoiceId=? and fyYear=? and groupId=?",Integer.class,ref.invoiceId(),ref.fyear(),group)==0)

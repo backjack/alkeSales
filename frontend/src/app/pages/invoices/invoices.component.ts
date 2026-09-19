@@ -62,7 +62,7 @@ export class InvoicesComponent implements OnInit {
   readonly itemGridTheme = themeQuartz.withParams({
     accentColor: '#6f4bea', backgroundColor: '#ffffff', foregroundColor: '#263147',
     headerBackgroundColor: '#f7f8fc', headerTextColor: '#69758b', rowHoverColor: '#f6f3ff',
-    fontFamily: "'DM Sans', Arial, sans-serif", fontSize: 13, headerFontSize: 16,
+    fontFamily: "'DM Sans', Arial, sans-serif", fontSize: 13, headerFontSize: 12,
     headerFontWeight: 700, rowHeight: 76, headerHeight: 56, spacing: 4,
   });
   readonly itemDefaultColDef: ColDef<InvoiceItem> = {
@@ -79,7 +79,7 @@ export class InvoicesComponent implements OnInit {
     } };
   }
   readonly itemColumns: ColDef<InvoiceItem>[] = [
-    { headerName: 'Sr. no.', width: 105, sortable: false, filter: false, cellRenderer: (p: ICellRendererParams<InvoiceItem>) => this.renderItemNumber(p) },
+    { headerName: '', colId: 'remove', width: 40, minWidth: 40, maxWidth: 40, sortable: false, filter: false, resizable: false, suppressHeaderMenuButton: true, cellClass: 'invoice-item-remove-cell', cellRenderer: (p: ICellRendererParams<InvoiceItem>) => this.renderItemRemove(p) },
     { headerName: 'Description', field: 'itemDescription', minWidth: 220, flex: 2.4, ...this.itemCell('itemDescription') },
     { headerName: 'HSN code', field: 'hnsCode', minWidth: 85, flex: 1, ...this.itemCell('hnsCode') },
     { headerName: 'Qty', field: 'quantity', minWidth: 65, flex: .65, ...this.itemCell('quantity') },
@@ -133,14 +133,12 @@ export class InvoicesComponent implements OnInit {
   }
   onGridReady(event: GridReadyEvent<SaleSummary>) { this.gridApi = event.api; }
   onItemGridReady(event: GridReadyEvent<InvoiceItem>) { this.itemGridApi = event.api; }
-  private renderItemNumber(params: ICellRendererParams<InvoiceItem>) {
-    const wrapper = document.createElement('div');
-    wrapper.className = 'invoice-item-number';
-    wrapper.append(document.createTextNode(String((params.node.rowIndex ?? 0) + 1)));
+  private renderItemRemove(params: ICellRendererParams<InvoiceItem>) {
+    const wrapper = document.createElement('span');
     if (!params.data || !this.editing) return wrapper;
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'item-remove-button';
-    button.textContent = 'Remove';
+    button.textContent = '\u00d7';
     button.setAttribute('aria-label', `Remove item ${params.node.rowIndex == null ? '' : params.node.rowIndex + 1}`);
     button.title = 'Remove item';
     button.addEventListener('click', event => {
@@ -294,7 +292,13 @@ export class InvoicesComponent implements OnInit {
     finally { if(request===this.detailRequest) this.detailLoading=false; this.notify(); }
   }
   private async fetchItems() { this.itemRecords=(await firstValueFrom(this.api.getItemOptions())).data ?? []; }
-  chooseItem(item: InvoiceItem, option: InvoiceItem) { item.itemDescription=option.itemDescription; item.hnsCode=option.hnsCode; item.tax=option.tax??0; item.cgst=option.cgst??0; item.sgst=option.sgst??0; item.igst=option.igst??0; this.itemGridApi?.refreshCells({force:true}); this.notify(); }
+  chooseItem(item: InvoiceItem, option: InvoiceItem) {
+    item.itemDescription=option.itemDescription; item.hnsCode=option.hnsCode; item.quantity=option.quantity??1; item.rate=option.rate??0;
+    item.tax=option.tax??0; item.cgst=option.cgst??0; item.sgst=option.sgst??0; item.igst=option.igst??0;
+    const node = this.itemGridApi?.getRenderedNodes().find(x => x.data === item);
+    this.itemGridApi?.refreshCells({rowNodes:node ? [node] : undefined,force:true});
+    this.notify();
+  }
   onItemChange(item: InvoiceItem) {
     const node = this.itemGridApi?.getRenderedNodes().find(x => x.data === item);
     this.itemGridApi?.refreshCells({ rowNodes: node ? [node] : undefined, columns: ['total'], force: true });

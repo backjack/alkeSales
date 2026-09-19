@@ -1,9 +1,7 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { ChangeDetectorRef, Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatFormFieldModule } from '@angular/material/form-field';
-import { MatInputModule } from '@angular/material/input';
 import { ICellRendererAngularComp } from 'ag-grid-angular';
 import { ICellRendererParams } from 'ag-grid-community';
 import { InvoiceItem } from '../../core/sales-api.service';
@@ -19,31 +17,41 @@ export interface ItemCellParams extends ICellRendererParams<InvoiceItem> {
 
 @Component({
   selector: 'app-invoice-item-cell', standalone: true,
-  imports: [CommonModule, FormsModule, MatAutocompleteModule, MatFormFieldModule, MatInputModule],
+  imports: [CommonModule, FormsModule, MatAutocompleteModule],
   template: `
-    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="grid-item-field" *ngIf="params.data as item">
-      <textarea *ngIf="field === 'itemDescription'; else singleInput" matInput rows="2"
+    <ng-container *ngIf="params.data as item">
+      <textarea *ngIf="field === 'itemDescription'; else singleInput" class="grid-item-input grid-item-description" rows="2"
         [attr.aria-label]="label" [title]="item.itemDescription" [matAutocomplete]="suggestions"
-        [ngModel]="item.itemDescription" (ngModelChange)="update($event)" [disabled]="!params.isEditable()"></textarea>
-      <ng-template #singleInput><input matInput [type]="numeric ? 'number' : 'text'" [attr.aria-label]="label"
-        [min]="numeric ? 0 : null" [ngModel]="item[field]" (ngModelChange)="update($event)" [disabled]="!params.isEditable()"></ng-template>
-      <mat-autocomplete #suggestions="matAutocomplete">
-        <mat-option *ngFor="let option of matches" [value]="option.itemDescription"
-          (onSelectionChange)="$event.isUserInput && choose(option)">{{option.itemDescription}} · HSN {{option.hnsCode || '—'}}</mat-option>
+        [ngModel]="item.itemDescription" (ngModelChange)="onDescriptionChange($event)" [disabled]="!params.isEditable()"></textarea>
+      <ng-template #singleInput><input class="grid-item-input" type="text" [attr.aria-label]="label"
+        [attr.inputmode]="numeric ? 'decimal' : 'text'" [ngModel]="item[field]"
+        (input)="update($any($event.target).value)" [disabled]="!params.isEditable()"></ng-template>
+      <mat-autocomplete #suggestions="matAutocomplete" class="invoice-item-autocomplete" [displayWith]="displayItemOption" (optionSelected)="choose($event.option.value)">
+        <mat-option *ngFor="let option of matches" [value]="option">
+          <span class="invoice-item-option">
+            <span class="invoice-item-option-description">{{option.itemDescription}}</span>
+            <span class="invoice-item-option-meta">HSN {{option.hnsCode || '—'}} · Rate {{option.rate | currency:'INR':'symbol':'1.2-2'}}</span>
+          </span>
+        </mat-option>
       </mat-autocomplete>
-    </mat-form-field>
+    </ng-container>
   `,
 })
 export class InvoiceItemCellComponent implements ICellRendererAngularComp {
+  private readonly cd = inject(ChangeDetectorRef);
   params!: ItemCellParams;
   agInit(params: ItemCellParams): void { this.params = params; }
-  refresh(params: ItemCellParams): boolean { this.params = params; return true; }
+  refresh(params: ItemCellParams): boolean { this.params = params; this.cd.detectChanges(); return true; }
   get field(): ItemField { return this.params.itemField; }
   get numeric(): boolean { return !['itemDescription', 'hnsCode'].includes(this.field); }
+  displayItemOption = (option: InvoiceItem | string | null): string => typeof option === 'string' ? option : option?.itemDescription ?? '';
   get label(): string { return ({ itemDescription: 'Description', hnsCode: 'HSN code', quantity: 'Quantity', rate: 'Rate', cgst: 'CGST percent', sgst: 'SGST percent', igst: 'IGST percent' } as Record<ItemField, string>)[this.field]; }
   get matches(): InvoiceItem[] {
     const query = (this.params.data?.itemDescription || '').trim().toLowerCase();
     return this.params.getSuggestions().filter(x => !query || x.itemDescription.toLowerCase().includes(query) || (x.hnsCode || '').toLowerCase().includes(query)).slice(0, 8);
+  }
+  onDescriptionChange(value: string | InvoiceItem): void {
+    if (typeof value === 'string') this.update(value);
   }
   update(value: string | number): void {
     const item = this.params.data;
