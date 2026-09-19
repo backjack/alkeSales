@@ -37,16 +37,18 @@ public class InvoicePdfBuilder {
     }
     public byte[] build(InvoiceDetail invoice) throws Exception {
         ByteArrayOutputStream bytes=new ByteArrayOutputStream();
-        Document document=new Document(PageSize.A4,36,36,36,42);
+        Document document=new Document(PageSize.A4,36,36,109,42);
         PdfWriter writer=PdfWriter.getInstance(document,bytes);
         writer.setPageEvent(new PdfPageEventHelper() {
-            @Override public void onEndPage(PdfWriter writer,Document document) {
-                ColumnText.showTextAligned(writer.getDirectContent(),Element.ALIGN_RIGHT,new Phrase("Page "+writer.getPageNumber(),TEXT),559,22,0);
+            @Override public void onStartPage(PdfWriter writer,Document document) {
+                if(writer.getPageNumber()==1) {
+                    ColumnText.showTextAligned(writer.getDirectContent(),Element.ALIGN_CENTER,
+                            new Phrase("TAX INVOICE",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK)),
+                            PageSize.A4.getWidth()/2,PageSize.A4.getTop(36),0);
+                }
             }
         });
         document.open();
-        Paragraph title=new Paragraph("TAX INVOICE",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK));
-        title.setAlignment(Element.ALIGN_CENTER); title.setSpacingAfter(6); document.add(title);
         Paragraph invoiceMeta=new Paragraph("Invoice No.: "+invoice.getInvoiceId()+"\nInvoice date: "+date(invoice.getInvoiceDate())+"    Financial year: "+invoice.getFyear()+"-"+(invoice.getFyear()+1),INVOICE_META);
         invoiceMeta.setAlignment(Element.ALIGN_LEFT); invoiceMeta.setSpacingAfter(8); document.add(invoiceMeta);
         Client client=invoice.getClient();
