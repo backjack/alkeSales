@@ -36,6 +36,7 @@ export class InvoicesComponent implements OnInit {
   year = 0; client = 0; month = 0; query = ''; loading = false; fyLoading = true; downloading = false;
   error = ''; message = ''; selected = new Set<string>();
   editorOpen = false; detailLoading = false; saving = false; yearLoading = false; creating = false; editing = false;
+  closeConfirmationOpen = false; actionLoading = false; actionLoadingText = '';
   editorError = ''; detail?: InvoiceDetail; summary?: SaleSummary;
   invoiceDatePickerValue: Date | null = null;
   formColumns = 3;
@@ -57,7 +58,7 @@ export class InvoicesComponent implements OnInit {
     { headerName: 'Date', field: 'invoiceDate', minWidth: 135, width: 140, sort: 'desc', valueFormatter: p => this.formatGridDate(p.value) },
     { headerName: 'Total', field: 'totalAmt', minWidth: 125, width: 130, cellClass: 'invoice-grid-amount', valueFormatter: p => this.formatMoney(p.value) },
     { headerName: 'Comments', field: 'details', minWidth: 220, flex: 1.4, tooltipField: 'details', cellClass: 'invoice-grid-comment-cell', cellRenderer: (p: ICellRendererParams<SaleSummary>) => this.renderComment(p) },
-    { headerName: 'Actions', minWidth: 195, width: 205, sortable: false, resizable: false, cellRenderer: (p: ICellRendererParams<SaleSummary>) => this.renderActions(p) },
+    { headerName: 'Actions', minWidth: 195, width: 205, sortable: false, resizable: false, suppressNavigable: true, cellClass: 'invoice-grid-actions-cell', cellRenderer: (p: ICellRendererParams<SaleSummary>) => this.renderActions(p) },
   ];
   readonly itemGridTheme = themeQuartz.withParams({
     accentColor: '#6f4bea', backgroundColor: '#ffffff', foregroundColor: '#263147',
@@ -93,6 +94,7 @@ export class InvoicesComponent implements OnInit {
 
   ngOnInit() { this.updateFormColumns(); void this.loadFilters(); }
   @HostListener('window:resize') updateFormColumns() { this.formColumns = window.innerWidth <= 850 ? 1 : 3; }
+  @HostListener('document:keydown.escape') onEscape() { if (this.closeConfirmationOpen) this.keepInvoiceOpen(); else if (this.editorOpen) this.requestCloseDetail(); }
   setInvoiceDate(value: Date | null) { this.invoiceDatePickerValue=value; if(this.summary) this.summary.invoiceDate=value ? this.normalizeDate(value.getTime()) : ''; }
   private syncInvoiceDatePicker() { this.invoiceDatePickerValue=this.summary?.invoiceDate ? new Date(`${this.summary.invoiceDate}T12:00:00`) : null; }
   private notify() { this.cd.markForCheck(); }
@@ -106,7 +108,8 @@ export class InvoicesComponent implements OnInit {
     const button = document.createElement('button');
     button.type = 'button'; button.className = 'invoice-grid-link';
     button.textContent = params.value || '—';
-    if (params.data) button.addEventListener('click', () => this.zone.run(() => void this.showDetail(params.data!)));
+    button.addEventListener('mousedown', event => event.stopPropagation());
+    if (params.data) button.addEventListener('click', event => { event.stopPropagation(); this.zone.run(() => void this.runGridAction('Loading invoice…', () => this.showDetail(params.data!))); });
     return button;
   }
   private renderComment(params: ICellRendererParams<SaleSummary>) {
@@ -121,18 +124,30 @@ export class InvoicesComponent implements OnInit {
     actions.className = 'invoice-grid-actions';
     if (!params.data) return actions;
     const invoice = params.data;
-    for (const [label, action] of [['Copy', () => void this.copyInvoices([invoice])], ['Edit', () => void this.showDetail(invoice, true)], ['PDF', () => void this.downloadPdf(invoice)]] as const) {
+    for (const [label, action] of [['Copy', () => this.copyInvoices([invoice])], ['Edit', () => this.showDetail(invoice, true)], ['PDF', () => this.downloadPdf(invoice)]] as const) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'table-action';
       button.textContent = label;
       button.setAttribute('aria-label', `${label} invoice ${invoice.invoiceId}`);
-      button.addEventListener('click', event => { event.stopPropagation(); this.zone.run(action); });
+      button.addEventListener('mousedown', event => event.stopPropagation());
+      button.addEventListener('click', event => {
+        event.stopPropagation();
+        const loadingText = label === 'Copy' ? 'Copying invoice…' : label === 'Edit' ? 'Loading invoice…' : 'Preparing PDF…';
+        this.zone.run(() => void this.runGridAction(loadingText, action));
+      });
       actions.appendChild(button);
     }
     return actions;
   }
   onGridReady(event: GridReadyEvent<SaleSummary>) { this.gridApi = event.api; }
   onItemGridReady(event: GridReadyEvent<InvoiceItem>) { this.itemGridApi = event.api; }
+  private async runGridAction(message: string, action: () => void | Promise<void>) {
+    if (this.actionLoading) return;
+    this.actionLoading = true; this.actionLoadingText = message; this.notify();
+    await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
+    try { await action(); }
+    finally { this.actionLoading = false; this.actionLoadingText = ''; this.notify(); }
+  }
   private renderItemRemove(params: ICellRendererParams<InvoiceItem>) {
     const wrapper = document.createElement('span');
     if (!params.data || !this.editing) return wrapper;
@@ -259,6 +274,7 @@ export class InvoicesComponent implements OnInit {
   }
   async createInvoice() {
     if(!this.year) return;
+    this.closeConfirmationOpen=false;
     this.editorOpen=true; this.detailLoading=true; this.creating=true; this.editing=true; this.editorError='';
     this.detail=undefined; this.summary=undefined;
     const request=++this.detailRequest;
@@ -276,6 +292,7 @@ export class InvoicesComponent implements OnInit {
   }
   async showDetail(invoice: SaleSummary, edit=false) {
     const request=++this.detailRequest;
+    this.closeConfirmationOpen=false;
     this.editorOpen=true; this.detailLoading=true; this.creating=false; this.editing=edit; this.editorError=''; this.detail=undefined;
     this.summary={...invoice,invoiceDate:this.normalizeDate(invoice.invoiceDate)};
     try {
@@ -358,7 +375,10 @@ export class InvoicesComponent implements OnInit {
     } catch(e) { this.editorError=this.errorMessage(e,'Invoice could not be saved. Check the fields and try again.'); }
     finally { this.saving=false; this.notify(); }
   }
-  closeDetail() { if(this.saving) return; ++this.detailRequest; ++this.yearRequest; this.yearLoading=false; this.editorOpen=false; this.detail=undefined; this.summary=undefined; }
+  requestCloseDetail() { if(this.saving || this.closeConfirmationOpen) return; this.closeConfirmationOpen=true; this.notify(); }
+  keepInvoiceOpen() { this.closeConfirmationOpen=false; this.notify(); }
+  confirmCloseDetail() { this.closeConfirmationOpen=false; this.closeDetail(); }
+  private closeDetail() { ++this.detailRequest; ++this.yearRequest; this.yearLoading=false; this.editorOpen=false; this.detail=undefined; this.summary=undefined; this.notify(); }
   private downloadBlob(blob: Blob, name: string) {
     const url=URL.createObjectURL(blob); const link=document.createElement('a'); link.href=url; link.download=name; link.click();
     setTimeout(()=>URL.revokeObjectURL(url),10000);
