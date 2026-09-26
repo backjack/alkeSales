@@ -3,19 +3,20 @@ import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
 import { MonthlySales, ClientSales, Option, Overview, SaleSummary, SalesApiService } from '../../core/sales-api.service';
-import { Router, RouterLink } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
-  selector: 'app-dashboard', standalone: true, imports: [CommonModule, FormsModule, RouterLink, MatAutocompleteModule, MatFormFieldModule, MatInputModule],
+  selector: 'app-dashboard', standalone: true, imports: [CommonModule, FormsModule, RouterLink, MatAutocompleteModule, MatFormFieldModule, MatInputModule, MatSelectModule],
   template: `
   <section class="page">
     <div class="page-heading"><div><p class="eyebrow">Overview</p><h1>Invoice dashboard</h1><p>Track billing performance and client revenue.</p></div><div class="panel-actions"><button class="secondary icon-button" (click)="refresh()" aria-label="Refresh data" title="Refresh data">↻</button><a class="primary icon-button" routerLink="/invoices" [queryParams]="{create: '1'}" aria-label="Create invoice" title="Create invoice">＋</a></div></div>
     <div class="fy-loading" *ngIf="fyLoading"><span></span>Loading financial years…</div>
-    <div class="filter-bar material-filters" *ngIf="!fyLoading">
-      <label>Financial year<select [(ngModel)]="selectedYear" (ngModelChange)="refresh()"><option *ngFor="let year of years" [ngValue]="year.key">{{year.value}}</option></select></label>
+    <div class="filter-bar material-filters dashboard-filters" *ngIf="!fyLoading">
+      <mat-form-field appearance="outline"><mat-label>Financial year</mat-label><mat-select [(ngModel)]="selectedYear" (ngModelChange)="refresh()"><mat-option *ngFor="let year of years" [value]="year.key">{{year.value}}</mat-option></mat-select></mat-form-field>
       <mat-form-field appearance="outline" class="client-typeahead"><mat-label>Client</mat-label><input matInput [matAutocomplete]="dashboardClientAuto" [(ngModel)]="clientFilterValue" (ngModelChange)="onClientInput($event)" placeholder="Type client name"><mat-autocomplete #dashboardClientAuto="matAutocomplete" [displayWith]="displayClientOption" (optionSelected)="selectClient($event.option.value)"><mat-option *ngFor="let client of matchingClients" [value]="client">{{client.value}}</mat-option></mat-autocomplete></mat-form-field>
       <span class="filter-note">Updated from live sales records</span>
     </div>
@@ -38,12 +39,12 @@ import { MatInputModule } from '@angular/material/input';
       </article>
     </div>
     <article class="panel recent"><div class="panel-head"><div><h2>Recent invoices</h2><p>Latest invoices matching the filters</p></div><a href="/invoices">View all</a></div>
-      <div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Client</th><th>Date</th><th>FY</th><th>Revenue</th><th>Status</th></tr></thead><tbody><tr class="recent-invoice-row" *ngFor="let invoice of recentInvoices" tabindex="0" role="button" (click)="openInvoice(invoice)" (keydown.enter)="openInvoice(invoice)" (keydown.space)="$event.preventDefault(); openInvoice(invoice)"><td><b>{{invoice.invoiceId}}</b></td><td>{{invoice.clientName}}</td><td>{{invoice.invoiceDate | date:'dd MMM yyyy'}}</td><td>{{invoice.fyYear}}</td><td>{{invoice.totalAmt | currency:'INR':'symbol':'1.0-0'}}</td><td><span class="status" [class.paid]="invoice.payReceived">{{invoice.payReceived ? 'Paid' : 'Pending'}}</span></td></tr></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Client</th><th>Date</th><th>FY</th><th>Revenue</th><th>Status</th></tr></thead><tbody><tr *ngFor="let invoice of recentInvoices"><td><b>{{invoice.invoiceId}}</b></td><td>{{invoice.clientName}}</td><td>{{invoice.invoiceDate | date:'dd MMM yyyy'}}</td><td>{{invoice.fyYear}}</td><td>{{invoice.totalAmt | currency:'INR':'symbol':'1.0-0'}}</td><td><span class="status" [class.paid]="invoice.payReceived">{{invoice.payReceived ? 'Paid' : 'Pending'}}</span></td></tr></tbody></table></div>
     </article>
   </section>`
 })
 export class DashboardComponent implements OnInit {
-  private readonly changeDetector = inject(ChangeDetectorRef); private readonly api = inject(SalesApiService); private readonly router = inject(Router);
+  private readonly changeDetector = inject(ChangeDetectorRef); private readonly api = inject(SalesApiService);
   years: Option[] = []; clients: Option[] = []; invoices: SaleSummary[] = [];
   clientFilterValue: Option | string = '';
   selectedYear = 0; selectedClient = 0; loading = true; fyLoading = true; error = '';
@@ -62,7 +63,6 @@ export class DashboardComponent implements OnInit {
   onClientInput(value: Option | string) { if(typeof value!=='string') return; this.clientFilterValue=value; if(this.selectedClient && value!==this.clients.find(client=>client.key===this.selectedClient)?.value){this.selectedClient=0;this.refresh();} }
   selectClient(client: Option) { this.clientFilterValue=client; if(this.selectedClient!==client.key){this.selectedClient=client.key;this.refresh();} }
   get clientSummary() { const rows=new Map<string,{name:string;count:number;revenue:number}>(); this.invoices.forEach(invoice=>{const name=invoice.clientName||'Unknown client';const row=rows.get(name)??{name,count:0,revenue:0};row.count++;row.revenue+=Number(invoice.totalAmt)||0;rows.set(name,row);}); return [...rows.values()].sort((a,b)=>b.revenue-a.revenue||b.count-a.count||a.name.localeCompare(b.name)).slice(0,8); }
-  openInvoice(invoice: SaleSummary) { void this.router.navigate(['/invoices'], {queryParams:{invoiceId:invoice.invoiceId,fyYearId:invoice.fyYearId}}); }
   get clientRows() { const labels = this.clientSales?.clientName ?? []; const values = this.clientSales?.dataSets?.[0]?.data ?? []; const max = Math.max(...values, 1); return labels.map((name, i) => ({name, revenue: values[i] ?? 0, percent: ((values[i] ?? 0) / max) * 100})).filter(x => !this.selectedClient || x.name === this.clients.find(c => c.key === this.selectedClient)?.value).sort((a,b) => b.revenue-a.revenue).slice(0,8); }
   get monthRows() { const values = this.monthlySales?.dataSets?.find(x => x.label.toLowerCase() === 'sales')?.data ?? []; const names=['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']; const max=Math.max(...values,1); return names.map((name,i)=>({name,revenue:values[i]??0,percent:((values[i]??0)/max)*100})).filter(x=>x.revenue>0); }
 }

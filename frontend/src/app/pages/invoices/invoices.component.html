@@ -30,7 +30,7 @@
   <section class="confirm-dialog" role="alertdialog" aria-modal="true" aria-labelledby="invoice-close-title" aria-describedby="invoice-close-description">
     <h2 id="invoice-close-title">Close invoice?</h2>
     <p id="invoice-close-description">Any unsaved changes will be lost. Do you want to close this invoice?</p>
-    <div class="confirm-actions"><button class="secondary icon-button" (click)="keepInvoiceOpen()" aria-label="Keep editing" title="Keep editing">←</button><button class="danger-button icon-button" (click)="confirmCloseDetail()" aria-label="Close invoice" title="Close invoice">×</button></div>
+    <div class="confirm-actions"><button class="secondary" (click)="keepInvoiceOpen()">Keep editing</button><button class="danger-button" (click)="confirmCloseDetail()">Close invoice</button></div>
   </section>
 </div>
 <div class="screen-loader" *ngIf="actionLoading" role="status" aria-live="polite"><span class="screen-loader-spinner"></span><strong>{{actionLoadingText}}</strong></div>

@@ -228,12 +228,11 @@ html {
 .client-summary-row{padding:11px 0;border-top:1px solid #f2f3f7;font-size:11px}
 .client-summary-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#62697b}
 .client-summary-row strong{font-variant-numeric:tabular-nums}
-.recent-invoice-row{cursor:pointer}
-.recent-invoice-row:hover td,.recent-invoice-row:focus-visible td{background:#f6f3ff}
-.recent-invoice-row:focus-visible{outline:2px solid #6f4bea;outline-offset:-2px}
+.dashboard-filters .mat-mdc-form-field{flex:0 0 220px;width:220px;min-width:220px}
 
 /* Icon-only actions retain an accessible name through aria-label and title. */
 .icon-button{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:9px!important;font-size:20px!important;line-height:1!important;text-decoration:none}
 .detail-close.icon-button{width:40px!important;min-width:40px!important;height:40px!important;padding:0!important}
 .confirm-actions .icon-button{width:40px!important}
 @media(max-width:520px){.confirm-actions .icon-button{width:100%!important}}
+@media(max-width:720px){.dashboard-filters .mat-mdc-form-field{flex:0 0 auto;width:100%;min-width:0}}

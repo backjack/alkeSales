@@ -43,7 +43,6 @@ export class InvoicesComponent implements OnInit {
   private gridApi?: GridApi<SaleSummary>;
   private itemGridApi?: GridApi<InvoiceItem>;
   private yearRequest = 0;
-  private routeInvoiceOpening = false;
   @ViewChild('editorClientTrigger') private editorClientTrigger?: MatAutocompleteTrigger;
   @ViewChild('invoicePicker') private invoicePicker?: MatDatepicker<Date>;
   @ViewChildren(MatSelect) private materialSelects?: QueryList<MatSelect>;
@@ -228,8 +227,7 @@ export class InvoicesComponent implements OnInit {
       const response = await firstValueFrom(this.api.getYears());
       this.years = [...(response.data ?? [])].sort((a,b) => b.key-a.key);
       const current = this.api.currentFinancialYearKey();
-      const requestedYear = Number(this.route.snapshot.queryParamMap.get('fyYearId'));
-      this.year = this.years.find(x => x.key === requestedYear)?.key ?? this.years.find(x => x.key === current)?.key ?? this.years[0]?.key ?? 0;
+      this.year = this.years.find(x => x.key === current)?.key ?? this.years[0]?.key ?? 0;
       if (!this.year) this.error = 'No financial years are configured.';
       else void this.load();
     } catch(e) { this.error = this.errorMessage(e,'Could not load financial years. Please retry.'); }
@@ -248,7 +246,7 @@ export class InvoicesComponent implements OnInit {
     this.loading = true; this.error = ''; this.selected.clear(); this.gridApi?.deselectAll();
     try {
       const result = await firstValueFrom(this.api.getInvoices([this.year],this.client ? [this.client] : []));
-      if (request === this.listRequest) { this.invoices = result.data ?? []; this.applyFilters(); this.openInvoiceFromRoute(); }
+      if (request === this.listRequest) { this.invoices = result.data ?? []; this.applyFilters(); }
     } catch(e) { if(request === this.listRequest) this.error = this.errorMessage(e,'Could not load invoices.'); }
     finally { if(request === this.listRequest) this.loading = false; this.notify(); }
   }
@@ -260,16 +258,6 @@ export class InvoicesComponent implements OnInit {
       .sort((a,b) => (+new Date(b.invoiceDate)- +new Date(a.invoiceDate)) || b.invoiceId.localeCompare(a.invoiceId,undefined,{numeric:true}));
   }
   get filtered() { return this.filteredInvoices; }
-  private openInvoiceFromRoute() {
-    const invoiceId = this.route.snapshot.queryParamMap.get('invoiceId');
-    const fyYearId = Number(this.route.snapshot.queryParamMap.get('fyYearId'));
-    if(!invoiceId || this.routeInvoiceOpening) return;
-    const invoice = this.invoices.find(row => row.invoiceId === invoiceId && (!fyYearId || row.fyYearId === fyYearId));
-    void this.router.navigate([], {relativeTo:this.route, queryParams:{invoiceId:null,fyYearId:null}, queryParamsHandling:'merge', replaceUrl:true});
-    if(!invoice) { this.error='The selected invoice could not be found for this financial year.'; return; }
-    this.routeInvoiceOpening=true;
-    void this.runGridAction('Loading invoice…', () => this.showDetail(invoice)).finally(() => this.routeInvoiceOpening=false);
-  }
   key(x: SaleSummary) { return JSON.stringify([x.fyYearId,x.invoiceId]); }
   private normalizeClient(client: Client): Client {
     const raw=client as Client & {gstno?:string;gstNo?:string};
@@ -393,6 +381,7 @@ export class InvoicesComponent implements OnInit {
   }
   requestCloseDetail() {
     if(this.saving || this.closeConfirmationOpen) return;
+    if(!this.editing) { this.closeDetail(); return; }
     this.editorClientTrigger?.closePanel();
     this.invoicePicker?.close();
     this.materialSelects?.forEach(select => select.close());
