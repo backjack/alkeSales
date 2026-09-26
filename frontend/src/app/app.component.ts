@@ -16,6 +16,7 @@ import { filter } from 'rxjs';
           <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()"><span>⌂</span> Dashboard</a>
           <a routerLink="/invoices" routerLinkActive="active" (click)="closeMenu()"><span>▤</span> Invoices</a>
           <a routerLink="/clients" routerLinkActive="active" (click)="closeMenu()"><span>♙</span> Clients</a>
+          <a routerLink="/documents" routerLinkActive="active" (click)="closeMenu()"><span>▣</span> Documents</a>
           <a routerLink="/analytics" routerLinkActive="active" (click)="closeMenu()"><span>⌁</span> Analytics</a>
         </nav>
         <div class="sidebar-foot"><span class="avatar">NS</span><div><strong>Sales Admin</strong><small>ALKE Finance</small></div></div>

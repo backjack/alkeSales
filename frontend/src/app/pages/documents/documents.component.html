@@ -1,0 +1,50 @@
+<section class="page documents-page">
+  <div class="page-heading">
+    <div><p class="eyebrow">DOCUMENT STORAGE</p><h1>Documents</h1><p>Upload PDFs and images into financial-year folders in Google Drive.</p></div>
+    @if (configured && !connected) { <button class="primary" (click)="connect()">Connect Google Drive</button> }
+  </div>
+
+  @if (!configured) { <div class="drive-notice error">Google Drive is not configured. Add the Google OAuth environment variables to Spring Boot.</div> }
+  @else if (!connected) { <div class="drive-notice">Connect the application's Google Drive account before uploading documents.</div> }
+  @if (error) { <div class="error">{{ error }}</div> }
+  @if (message) { <div class="success-message">{{ message }}</div> }
+
+  <div class="document-layout">
+    <article class="panel upload-panel">
+      <div class="panel-head"><div><h2>Upload files</h2><p>PDF, JPG, PNG or WebP · maximum 20 files · 25 MB each</p></div></div>
+      <div class="upload-content">
+        <div class="upload-meta">
+          <label>Document date<input type="date" [(ngModel)]="documentDate"></label>
+          <label>Destination<input type="text" [value]="destination" readonly></label>
+        </div>
+        <label class="drop-zone" [class.disabled]="!connected">
+          <input type="file" multiple accept="application/pdf,image/jpeg,image/png,image/webp" (change)="chooseFiles($event)" [disabled]="!connected">
+          <strong>Select PDF or image files</strong><span>Choose multiple files from your computer</span>
+        </label>
+        @if (selectedFiles.length) {
+          <div class="selected-files">
+            @for (file of selectedFiles; track file.name + file.size; let index = $index) {
+              <div><span><strong>{{ file.name }}</strong><small>{{ formatSize(file.size) }}</small></span><button class="table-action" (click)="removeFile(index)">Remove</button></div>
+            }
+          </div>
+        }
+        <div class="upload-actions"><button class="primary" (click)="upload()" [disabled]="uploading || !connected || !selectedFiles.length">{{ uploading ? 'Uploading…' : 'Upload files' }}</button></div>
+      </div>
+    </article>
+
+    <article class="panel files-panel">
+      <div class="panel-head document-list-head"><div><h2>Files by month</h2><p>{{ documents.length }} file(s)</p></div><button class="secondary" (click)="downloadMonth()" [disabled]="!documents.length">Download month ZIP</button></div>
+      <div class="document-filters">
+        <label>Financial year<select [(ngModel)]="selectedFinancialYear" (change)="loadDocuments()">@for (year of years; track year) { <option [ngValue]="year">{{ year }}–{{ year + 1 }}</option> }</select></label>
+        <label>Month<select [(ngModel)]="selectedMonth" (change)="loadDocuments()">@for (month of months; track month.value) { <option [ngValue]="month.value">{{ month.label }}</option> }</select></label>
+      </div>
+      @if (loading) { <div class="loading">Loading files…</div> }
+      @else if (!documents.length) { <div class="empty">No files uploaded for this month.</div> }
+      @else {
+        <div class="table-wrap"><table><thead><tr><th>File</th><th>Date</th><th>Size</th><th>Uploaded by</th><th></th></tr></thead><tbody>
+          @for (document of documents; track document.id) { <tr><td class="file-name">{{ document.originalName }}</td><td>{{ document.documentDate | date:'dd MMM yyyy' }}</td><td>{{ formatSize(document.sizeBytes) }}</td><td>{{ document.uploadedBy }}</td><td><button class="table-action" (click)="download(document)">Download</button></td></tr> }
+        </tbody></table></div>
+      }
+    </article>
+  </div>
+</section>

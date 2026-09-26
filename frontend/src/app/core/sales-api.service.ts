@@ -14,6 +14,8 @@ export interface InvoiceDetail { invoiceId: string; fyear: number; invoiceDate: 
 export interface Overview { sumBill: number; netRevenue: number; sumPartPymt: number; invoiceCount: number; }
 export interface ClientSales { clientName: string[]; dataSets: { label: string; data: number[] }[]; }
 export interface MonthlySales { dataSets: { label: string; data: number[] }[]; labels?: string[]; }
+export interface DriveStatus { configured: boolean; connected: boolean; }
+export interface StoredDocument { id: number; originalName: string; mimeType: string; sizeBytes: number; driveFileId: string; documentDate: string; financialYear: number; month: number; uploadedBy: string; uploadedAt: string; }
 
 @Injectable({ providedIn: 'root' })
 export class SalesApiService {
@@ -47,5 +49,18 @@ export class SalesApiService {
   getMonthlySales(year: number) { return this.http.get<ApiResponse<MonthlySales>>(`/graph/sales/month/${year}`); }
   getInvoiceDetail(invoiceId: string, fyear: number) {
     return this.http.post<ApiResponse<InvoiceDetail>>('/invoice/item/detail', { invoiceId, fyear });
+  }
+  getDriveStatus() { return this.http.get<ApiResponse<DriveStatus>>('/documents/google/status'); }
+  uploadDocuments(documentDate: string, files: File[]) {
+    const form = new FormData(); form.append('documentDate', documentDate);
+    files.forEach(file => form.append('files', file, file.name));
+    return this.http.post<ApiResponse<StoredDocument[]>>('/documents/upload', form);
+  }
+  getDocuments(financialYear: number, month: number) {
+    return this.http.get<ApiResponse<StoredDocument[]>>('/documents/list', { params: { financialYear, month } });
+  }
+  downloadDocument(id: number) { return this.http.get(`/documents/${id}/download`, { responseType: 'blob' }); }
+  downloadDocumentMonth(financialYear: number, month: number) {
+    return this.http.get('/documents/month.zip', { params: { financialYear, month }, responseType: 'blob' });
   }
 }

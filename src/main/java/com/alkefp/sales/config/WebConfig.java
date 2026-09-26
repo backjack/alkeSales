@@ -24,7 +24,7 @@ public class WebConfig {
     SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(authorize -> authorize
                 .requestMatchers("/css/**", "/js/**", "/img/**", "/download/**", "/login", "/favicon.ico", "/*.js", "/*.css").permitAll()
-                .requestMatchers("/", "/dashboard", "/invoices", "/clients", "/index/**", "/index.html", "/client.html", "/home/**", "/graph/**", "/client/**", "/invoice/**", "/utility/**").authenticated()
+                .requestMatchers("/", "/dashboard", "/invoices", "/clients", "/analytics", "/documents", "/index/**", "/index.html", "/client.html", "/home/**", "/graph/**", "/client/**", "/invoice/**", "/utility/**", "/documents/**").authenticated()
                 .anyRequest().authenticated())
             .csrf(csrf -> csrf.disable())
             .formLogin(form -> form.loginPage("/login")
