@@ -1,15 +1,15 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, HostListener, NgZone, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, NgZone, OnInit, QueryList, ViewChild, ViewChildren, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatAutocompleteModule, MatAutocompleteTrigger } from '@angular/material/autocomplete';
+import { MatDatepicker, MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatGridListModule } from '@angular/material/grid-list';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelect, MatSelectModule } from '@angular/material/select';
 import { AgGridAngular } from 'ag-grid-angular';
 import { AllCommunityModule, ColDef, GetRowIdFunc, GridApi, GridReadyEvent, ICellRendererParams, ModuleRegistry, RowSelectionOptions, SelectionChangedEvent, themeQuartz } from 'ag-grid-community';
 import { Client, InvoiceDetail, InvoiceItem, Option, SaleSummary, SalesApiService } from '../../core/sales-api.service';
@@ -43,6 +43,10 @@ export class InvoicesComponent implements OnInit {
   private gridApi?: GridApi<SaleSummary>;
   private itemGridApi?: GridApi<InvoiceItem>;
   private yearRequest = 0;
+  private routeInvoiceOpening = false;
+  @ViewChild('editorClientTrigger') private editorClientTrigger?: MatAutocompleteTrigger;
+  @ViewChild('invoicePicker') private invoicePicker?: MatDatepicker<Date>;
+  @ViewChildren(MatSelect) private materialSelects?: QueryList<MatSelect>;
   readonly gridTheme = themeQuartz.withParams({
     accentColor: '#6f4bea', backgroundColor: '#ffffff', foregroundColor: '#263147',
     headerBackgroundColor: '#f7f8fc', headerTextColor: '#69758b', rowHoverColor: '#f6f3ff',
@@ -124,10 +128,11 @@ export class InvoicesComponent implements OnInit {
     actions.className = 'invoice-grid-actions';
     if (!params.data) return actions;
     const invoice = params.data;
-    for (const [label, action] of [['Copy', () => this.copyInvoices([invoice])], ['Edit', () => this.showDetail(invoice, true)], ['PDF', () => this.downloadPdf(invoice)]] as const) {
+    for (const [label, icon, action] of [['Copy', '⧉', () => this.copyInvoices([invoice])], ['Edit', '✎', () => this.showDetail(invoice, true)], ['PDF', '↓', () => this.downloadPdf(invoice)]] as const) {
       const button = document.createElement('button');
-      button.type = 'button'; button.className = 'table-action';
-      button.textContent = label;
+      button.type = 'button'; button.className = 'table-action icon-button';
+      button.textContent = icon;
+      button.title = label;
       button.setAttribute('aria-label', `${label} invoice ${invoice.invoiceId}`);
       button.addEventListener('mousedown', event => event.stopPropagation());
       button.addEventListener('click', event => {
@@ -223,7 +228,8 @@ export class InvoicesComponent implements OnInit {
       const response = await firstValueFrom(this.api.getYears());
       this.years = [...(response.data ?? [])].sort((a,b) => b.key-a.key);
       const current = this.api.currentFinancialYearKey();
-      this.year = this.years.find(x => x.key === current)?.key ?? this.years[0]?.key ?? 0;
+      const requestedYear = Number(this.route.snapshot.queryParamMap.get('fyYearId'));
+      this.year = this.years.find(x => x.key === requestedYear)?.key ?? this.years.find(x => x.key === current)?.key ?? this.years[0]?.key ?? 0;
       if (!this.year) this.error = 'No financial years are configured.';
       else void this.load();
     } catch(e) { this.error = this.errorMessage(e,'Could not load financial years. Please retry.'); }
@@ -242,7 +248,7 @@ export class InvoicesComponent implements OnInit {
     this.loading = true; this.error = ''; this.selected.clear(); this.gridApi?.deselectAll();
     try {
       const result = await firstValueFrom(this.api.getInvoices([this.year],this.client ? [this.client] : []));
-      if (request === this.listRequest) { this.invoices = result.data ?? []; this.applyFilters(); }
+      if (request === this.listRequest) { this.invoices = result.data ?? []; this.applyFilters(); this.openInvoiceFromRoute(); }
     } catch(e) { if(request === this.listRequest) this.error = this.errorMessage(e,'Could not load invoices.'); }
     finally { if(request === this.listRequest) this.loading = false; this.notify(); }
   }
@@ -254,6 +260,16 @@ export class InvoicesComponent implements OnInit {
       .sort((a,b) => (+new Date(b.invoiceDate)- +new Date(a.invoiceDate)) || b.invoiceId.localeCompare(a.invoiceId,undefined,{numeric:true}));
   }
   get filtered() { return this.filteredInvoices; }
+  private openInvoiceFromRoute() {
+    const invoiceId = this.route.snapshot.queryParamMap.get('invoiceId');
+    const fyYearId = Number(this.route.snapshot.queryParamMap.get('fyYearId'));
+    if(!invoiceId || this.routeInvoiceOpening) return;
+    const invoice = this.invoices.find(row => row.invoiceId === invoiceId && (!fyYearId || row.fyYearId === fyYearId));
+    void this.router.navigate([], {relativeTo:this.route, queryParams:{invoiceId:null,fyYearId:null}, queryParamsHandling:'merge', replaceUrl:true});
+    if(!invoice) { this.error='The selected invoice could not be found for this financial year.'; return; }
+    this.routeInvoiceOpening=true;
+    void this.runGridAction('Loading invoice…', () => this.showDetail(invoice)).finally(() => this.routeInvoiceOpening=false);
+  }
   key(x: SaleSummary) { return JSON.stringify([x.fyYearId,x.invoiceId]); }
   private normalizeClient(client: Client): Client {
     const raw=client as Client & {gstno?:string;gstNo?:string};
@@ -375,7 +391,15 @@ export class InvoicesComponent implements OnInit {
     } catch(e) { this.editorError=this.errorMessage(e,'Invoice could not be saved. Check the fields and try again.'); }
     finally { this.saving=false; this.notify(); }
   }
-  requestCloseDetail() { if(this.saving || this.closeConfirmationOpen) return; this.closeConfirmationOpen=true; this.notify(); }
+  requestCloseDetail() {
+    if(this.saving || this.closeConfirmationOpen) return;
+    this.editorClientTrigger?.closePanel();
+    this.invoicePicker?.close();
+    this.materialSelects?.forEach(select => select.close());
+    if(document.activeElement instanceof HTMLElement) document.activeElement.blur();
+    this.closeConfirmationOpen=true;
+    this.notify();
+  }
   keepInvoiceOpen() { this.closeConfirmationOpen=false; this.notify(); }
   confirmCloseDetail() { this.closeConfirmationOpen=false; this.closeDetail(); }
   private closeDetail() { ++this.detailRequest; ++this.yearRequest; this.yearLoading=false; this.editorOpen=false; this.detail=undefined; this.summary=undefined; this.notify(); }

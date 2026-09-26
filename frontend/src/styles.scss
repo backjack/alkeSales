@@ -175,14 +175,14 @@ html {
 .primary{text-decoration:none}
 .detail-close{width:auto;min-width:56px;height:36px;padding:0 10px;border-radius:9px}
 
-.confirm-backdrop{position:fixed;inset:0;z-index:90;background:rgba(15,23,42,.58);display:grid;place-items:center;padding:20px}
+.confirm-backdrop{position:fixed;inset:0;z-index:1200;background:rgba(15,23,42,.58);display:grid;place-items:center;padding:20px}
 .confirm-dialog{width:min(430px,100%);background:#fff;border-radius:14px;padding:24px;box-shadow:0 24px 70px rgba(15,23,42,.28)}
 .confirm-dialog h2{margin:0 0 8px;font-size:20px;color:#172034}
 .confirm-dialog p{margin:0;color:#73798b;font-size:14px;line-height:1.55}
 .confirm-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:22px}
 .danger-button{border:0;border-radius:9px;min-height:40px;padding:9px 15px;background:#c63f55;color:#fff;font:inherit;font-weight:600;cursor:pointer}
 .danger-button:hover{background:#ad3046}.danger-button:focus-visible{outline:2px solid #c63f55;outline-offset:2px}
-.screen-loader{position:fixed;inset:0;z-index:110;background:rgba(255,255,255,.76);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;color:#352273;font-size:14px}
+.screen-loader{position:fixed;inset:0;z-index:1300;background:rgba(255,255,255,.76);backdrop-filter:blur(2px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:13px;color:#352273;font-size:14px}
 .screen-loader-spinner{width:38px;height:38px;border:4px solid #ded6ff;border-top-color:#6f4bea;border-radius:50%;animation:screen-loader-spin .7s linear infinite}
 @keyframes screen-loader-spin{to{transform:rotate(360deg)}}
 @media(max-width:520px){.confirm-actions{flex-direction:column-reverse}.confirm-actions button{width:100%}}
@@ -219,3 +219,21 @@ html {
 .invoice-item-option{display:grid;gap:3px;min-width:0;padding:2px 0}
 .invoice-item-option-description{overflow-wrap:anywhere;color:#263147;font:600 13px/18px 'DM Sans',Arial,sans-serif}
 .invoice-item-option-meta{color:#758096;font:12px/16px 'DM Sans',Arial,sans-serif}
+
+/* Dashboard client totals and interactive recent invoices. */
+.client-summary{padding:8px 20px 14px}
+.client-summary-head,.client-summary-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 112px;gap:10px;align-items:center}
+.client-summary-head{padding:9px 0;color:#989daa;text-transform:uppercase;letter-spacing:.05em;font-size:9px;font-weight:700}
+.client-summary-head span:not(:first-child),.client-summary-row strong{text-align:right}
+.client-summary-row{padding:11px 0;border-top:1px solid #f2f3f7;font-size:11px}
+.client-summary-row>span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#62697b}
+.client-summary-row strong{font-variant-numeric:tabular-nums}
+.recent-invoice-row{cursor:pointer}
+.recent-invoice-row:hover td,.recent-invoice-row:focus-visible td{background:#f6f3ff}
+.recent-invoice-row:focus-visible{outline:2px solid #6f4bea;outline-offset:-2px}
+
+/* Icon-only actions retain an accessible name through aria-label and title. */
+.icon-button{width:40px!important;min-width:40px!important;height:40px!important;min-height:40px!important;padding:0!important;border-radius:9px!important;font-size:20px!important;line-height:1!important;text-decoration:none}
+.detail-close.icon-button{width:40px!important;min-width:40px!important;height:40px!important;padding:0!important}
+.confirm-actions .icon-button{width:40px!important}
+@media(max-width:520px){.confirm-actions .icon-button{width:100%!important}}

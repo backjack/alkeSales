@@ -1,7 +1,7 @@
 <section class="page analytics-page">
   <div class="page-heading">
     <div><p class="eyebrow">Insights</p><h1>Revenue analytics</h1><p>Compare monthly and cumulative invoice revenue across financial years.</p></div>
-    <button class="primary" (click)="refresh()" [disabled]="loading">{{loading ? 'Refreshing…' : 'Refresh data'}}</button>
+    <button class="primary icon-button" (click)="refresh()" [disabled]="loading" aria-label="Refresh analytics" title="Refresh analytics">↻</button>
   </div>
 
   <div class="filter-bar" *ngIf="years.length">

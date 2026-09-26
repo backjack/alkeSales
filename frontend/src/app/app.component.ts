@@ -11,7 +11,7 @@ import { filter } from 'rxjs';
     <div class="app-shell">
       <button class="sidebar-backdrop" [class.open]="menuOpen" (click)="closeMenu()" aria-label="Close navigation menu" tabindex="-1"></button>
       <aside class="sidebar" [class.open]="menuOpen" id="main-navigation">
-        <div class="sidebar-head"><a class="brand" routerLink="/dashboard" (click)="closeMenu()"><span class="brand-mark">A</span><span>ALKE</span></a><button class="sidebar-close" (click)="closeMenu()" aria-label="Close menu">Close</button></div>
+        <div class="sidebar-head"><a class="brand" routerLink="/dashboard" (click)="closeMenu()"><span class="brand-mark">A</span><span>ALKE</span></a><button class="sidebar-close icon-button" (click)="closeMenu()" aria-label="Close menu" title="Close menu">×</button></div>
         <nav aria-label="Main navigation">
           <a routerLink="/dashboard" routerLinkActive="active" (click)="closeMenu()"><span>⌂</span> Dashboard</a>
           <a routerLink="/invoices" routerLinkActive="active" (click)="closeMenu()"><span>▤</span> Invoices</a>
