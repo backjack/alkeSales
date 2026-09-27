@@ -22,8 +22,11 @@ export class SalesApiService {
   saveInvoice(summary: SaleSummary, detail: InvoiceDetail, create: boolean) {
     return this.http.post<ApiResponse<InvoiceDetail>>(`/invoice/editor/${create ? 'create' : 'save'}`, { summary, detail });
   }
-  downloadInvoice(invoiceId: string, fyear: number) {
-    return this.http.post('/invoice/editor/pdf', { invoiceId, fyear }, { responseType: 'blob' });
+  downloadInvoice(invoiceId: string, fyear: number, letterhead: boolean) {
+    return this.http.post('/invoice/editor/pdf', { invoiceId, fyear, letterhead }, { responseType: 'blob' });
+  }
+  downloadInvoiceWord(invoiceId: string, fyear: number, letterhead: boolean) {
+    return this.http.post('/invoice/editor/word', { invoiceId, fyear, letterhead }, { responseType: 'blob' });
   }
   downloadInvoices(invoices: SaleSummary[]) {
     return this.http.post('/invoice/editor/zip', invoices.map(x => ({invoiceId: x.invoiceId, fyear: x.fyYearId})), { responseType: 'blob' });

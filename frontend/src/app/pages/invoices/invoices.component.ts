@@ -34,6 +34,7 @@ export class InvoicesComponent implements OnInit {
   editorClientValue: Client | string = '';
   readonly months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   year = 0; client = 0; month = 0; query = ''; loading = false; fyLoading = true; downloading = false;
+  includeLetterhead = false;
   error = ''; message = ''; selected = new Set<string>();
   editorOpen = false; detailLoading = false; saving = false; yearLoading = false; creating = false; editing = false;
   closeConfirmationOpen = false; actionLoading = false; actionLoadingText = '';
@@ -127,7 +128,7 @@ export class InvoicesComponent implements OnInit {
     actions.className = 'invoice-grid-actions';
     if (!params.data) return actions;
     const invoice = params.data;
-    for (const [label, icon, action] of [['Copy', '⧉', () => this.copyInvoices([invoice])], ['Edit', '✎', () => this.showDetail(invoice, true)], ['PDF', '↓', () => this.downloadPdf(invoice)]] as const) {
+    for (const [label, icon, action] of [['Word', 'W', () => this.downloadWord(invoice)], ['Edit', '✎', () => this.showDetail(invoice, true)], ['PDF', '↓', () => this.downloadPdf(invoice)]] as const) {
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'table-action icon-button';
       button.textContent = icon;
@@ -136,7 +137,7 @@ export class InvoicesComponent implements OnInit {
       button.addEventListener('mousedown', event => event.stopPropagation());
       button.addEventListener('click', event => {
         event.stopPropagation();
-        const loadingText = label === 'Copy' ? 'Copying invoice…' : label === 'Edit' ? 'Loading invoice…' : 'Preparing PDF…';
+        const loadingText = label === 'Edit' ? 'Loading invoice…' : label === 'Word' ? 'Preparing Word document…' : 'Preparing PDF…';
         this.zone.run(() => void this.runGridAction(loadingText, action));
       });
       actions.appendChild(button);
@@ -169,25 +170,6 @@ export class InvoicesComponent implements OnInit {
   }
   onGridSelectionChanged(event: SelectionChangedEvent<SaleSummary>) {
     this.selected = new Set(event.api.getSelectedRows().map(invoice => this.key(invoice)));
-    this.notify();
-  }
-  async copySelected() {
-    const rows: SaleSummary[] = [];
-    this.gridApi?.forEachNodeAfterFilterAndSort(node => { if (node.isSelected() && node.data) rows.push(node.data); });
-    await this.copyInvoices(rows);
-  }
-  async copyInvoices(rows: SaleSummary[]) {
-    if (!rows.length) return;
-    const clean = (value: unknown) => String(value ?? '').replace(/[\t\r\n]+/g, ' ').trim();
-    const lines = rows.map(invoice => [invoice.invoiceId, invoice.clientName, this.formatGridDate(invoice.invoiceDate), invoice.totalAmt, invoice.details].map(clean).join('\t'));
-    const content = ['Invoice\tClient\tDate\tTotal\tComments', ...lines].join('\n');
-    try {
-      await navigator.clipboard.writeText(content);
-      this.message = `${rows.length} invoice${rows.length === 1 ? '' : 's'} copied to clipboard.`;
-      this.error = '';
-    } catch {
-      this.error = 'Could not access the clipboard. Please allow clipboard access and try again.';
-    }
     this.notify();
   }
   displayClientOption = (option: Option | string | null): string => typeof option === 'string' ? option : option?.value ?? '';
@@ -398,9 +380,16 @@ export class InvoicesComponent implements OnInit {
   }
   async downloadPdf(invoice: SaleSummary) {
     this.downloading=true; this.error=''; this.editorError='';
-    try { this.downloadBlob(await firstValueFrom(this.api.downloadInvoice(invoice.invoiceId,invoice.fyYearId)),
+    try { this.downloadBlob(await firstValueFrom(this.api.downloadInvoice(invoice.invoiceId,invoice.fyYearId,this.includeLetterhead)),
       'invoice-'+invoice.fyYearId+'-'+invoice.invoiceId.replace(/[^a-zA-Z0-9_-]/g,'_')+'.pdf'); }
     catch(e) { this.error=this.editorError=this.errorMessage(e,'PDF download failed. Please retry.'); }
+    finally { this.downloading=false; this.notify(); }
+  }
+  async downloadWord(invoice: SaleSummary) {
+    this.downloading=true; this.error=''; this.editorError='';
+    try { this.downloadBlob(await firstValueFrom(this.api.downloadInvoiceWord(invoice.invoiceId,invoice.fyYearId,this.includeLetterhead)),
+      'invoice-'+invoice.fyYearId+'-'+invoice.invoiceId.replace(/[^a-zA-Z0-9_-]/g,'_')+'.docx'); }
+    catch(e) { this.error=this.editorError=this.errorMessage(e,'Word download failed. Please retry.'); }
     finally { this.downloading=false; this.notify(); }
   }
   async downloadZip() {

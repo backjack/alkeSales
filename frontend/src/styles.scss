@@ -169,6 +169,7 @@ html {
 .material-filters .client-typeahead{flex:1.2 1 220px}
 .items-heading .secondary,.invoice-items-table .table-action{font-size:13px}
 .panel-actions{flex-wrap:wrap;justify-content:flex-end}
+.letterhead-toggle{min-height:36px;padding:0 11px;font-size:12px}.letterhead-toggle.active{background:#6044cb;color:#fff;border-color:#6044cb}
 
 /* Compact, text-only actions share the same visual rhythm throughout the app. */
 .primary,.secondary,.table-action{display:inline-flex;align-items:center;justify-content:center;gap:7px}

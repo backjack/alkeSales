@@ -3,6 +3,7 @@ package com.alkefp.sales.controller;
 import com.alkefp.sales.beans.*;
 import com.alkefp.sales.dao.*;
 import com.alkefp.sales.helper.InvoicePdfBuilder;
+import com.alkefp.sales.helper.InvoiceWordBuilder;
 import org.springframework.http.*;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.core.Authentication;
@@ -22,10 +23,12 @@ public class InvoiceEditorController {
     private final SummaryDao summaries;
     private final InvoiceDetailDao details;
     private final InvoicePdfBuilder pdf;
-    public InvoiceEditorController(JdbcTemplate jdbc, SummaryDao summaries, InvoiceDetailDao details, InvoicePdfBuilder pdf) {
-        this.jdbc=jdbc; this.summaries=summaries; this.details=details; this.pdf=pdf;
+    private final InvoiceWordBuilder word;
+    public InvoiceEditorController(JdbcTemplate jdbc, SummaryDao summaries, InvoiceDetailDao details, InvoicePdfBuilder pdf, InvoiceWordBuilder word) {
+        this.jdbc=jdbc; this.summaries=summaries; this.details=details; this.pdf=pdf; this.word=word;
     }
     public record Reference(String invoiceId, int fyear) {}
+    public record DownloadRequest(String invoiceId, int fyear, boolean letterhead) {}
     public record SaveRequest(SaleSummary summary, InvoiceDetail detail) {}
     private String group(Authentication auth) {
         User user=summaries.getUserMap().get(auth.getName());
@@ -107,9 +110,14 @@ public class InvoiceEditorController {
         return response(details.getFullInvoiceDetail(ref.invoiceId(),ref.fyear(),group));
     }
     @PostMapping("/pdf")
-    public ResponseEntity<byte[]> download(@RequestBody Reference ref, Authentication auth) throws Exception {
-        String group=group(auth); requireInvoice(ref,group);
-        return attachment(pdf.build(details.getFullInvoiceDetail(ref.invoiceId(),ref.fyear(),group)),"application/pdf",safeName(ref)+".pdf");
+    public ResponseEntity<byte[]> download(@RequestBody DownloadRequest request, Authentication auth) throws Exception {
+        Reference ref=new Reference(request.invoiceId(),request.fyear()); String group=group(auth); requireInvoice(ref,group);
+        return attachment(pdf.build(details.getFullInvoiceDetail(ref.invoiceId(),ref.fyear(),group),request.letterhead()),"application/pdf",safeName(ref)+".pdf");
+    }
+    @PostMapping("/word")
+    public ResponseEntity<byte[]> downloadWord(@RequestBody DownloadRequest request, Authentication auth) throws Exception {
+        Reference ref=new Reference(request.invoiceId(),request.fyear()); String group=group(auth); requireInvoice(ref,group);
+        return attachment(word.build(details.getFullInvoiceDetail(ref.invoiceId(),ref.fyear(),group),request.letterhead()),"application/vnd.openxmlformats-officedocument.wordprocessingml.document",safeName(ref)+".docx");
     }
     @PostMapping("/zip")
     public ResponseEntity<byte[]> zip(@RequestBody List<Reference> refs,Authentication auth) throws Exception {

@@ -6,6 +6,7 @@ import com.lowagie.text.pdf.*;
 import org.springframework.stereotype.Component;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
@@ -15,12 +16,18 @@ public class InvoicePdfBuilder {
     private static final Color INK=new Color(32,44,68);
     private static final Font TEXT=FontFactory.getFont(FontFactory.HELVETICA,9,Font.NORMAL,INK);
     private static final Font HEADING=FontFactory.getFont(FontFactory.HELVETICA_BOLD,10,Font.NORMAL,INK);
-    private static final Font CLIENT=FontFactory.getFont(FontFactory.HELVETICA_BOLD,9,Font.NORMAL,INK);
-    private static final Font INVOICE_META=FontFactory.getFont(FontFactory.HELVETICA_BOLD,11,Font.NORMAL,INK);
     private static final Font FOOTER_HEADING=FontFactory.getFont(FontFactory.HELVETICA_BOLD,8,Font.NORMAL,INK);
     private static final Font FOOTER_TEXT=FontFactory.getFont(FontFactory.HELVETICA,8,Font.NORMAL,INK);
     private static final Font FOOTER_ADDRESS=FontFactory.getFont(FontFactory.HELVETICA,7,Font.NORMAL,INK);
     private static final String SUPPLIER_GST="27AAKCS1815L1Z2";
+    // The supplied letterhead PNG includes a translucent drop shadow around its A4 artwork.
+    // Render only the opaque page canvas so PDFs have no artificial outer border.
+    private static final float LETTERHEAD_SOURCE_WIDTH=2752f;
+    private static final float LETTERHEAD_SOURCE_HEIGHT=3874f;
+    private static final float LETTERHEAD_PAGE_LEFT=75f;
+    private static final float LETTERHEAD_PAGE_TOP=100f;
+    private static final float LETTERHEAD_PAGE_WIDTH=2596f;
+    private static final float LETTERHEAD_PAGE_HEIGHT=3678f;
     private static String text(String value) { return value==null ? "" : value; }
     private static String money(Double value) { return String.format(Locale.US,"%,.2f",value==null?0:value); }
     private static String percent(Double value) { return String.format(Locale.US,"%.2f",value==null?0:value); }
@@ -29,31 +36,50 @@ public class InvoicePdfBuilder {
         double base=item.getAmount()==null ? item.getRate()*item.getQuantity() : item.getAmount();
         return money(base*(rate==null?0:rate)/100)+"\n("+percent(rate)+"%)";
     }
+    private static void addLetterhead(PdfWriter writer,URL letterheadImage) throws Exception {
+        Image image=Image.getInstance(letterheadImage);
+        float scaleX=PageSize.A4.getWidth()/LETTERHEAD_PAGE_WIDTH;
+        float scaleY=PageSize.A4.getHeight()/LETTERHEAD_PAGE_HEIGHT;
+        image.scaleAbsolute(LETTERHEAD_SOURCE_WIDTH*scaleX,LETTERHEAD_SOURCE_HEIGHT*scaleY);
+        image.setAbsolutePosition(-LETTERHEAD_PAGE_LEFT*scaleX,
+                PageSize.A4.getHeight()-image.getScaledHeight()+LETTERHEAD_PAGE_TOP*scaleY);
+        writer.getDirectContentUnder().addImage(image);
+    }
     private void cell(PdfPTable table,String value,boolean heading) {
         PdfPCell cell=new PdfPCell(new Phrase(text(value),heading?FontFactory.getFont(FontFactory.HELVETICA_BOLD,9):TEXT));
         cell.setPadding(7); cell.setBorderColor(new Color(226,231,239));
         if(heading) cell.setBackgroundColor(new Color(239,242,248));
         table.addCell(cell);
     }
-    public byte[] build(InvoiceDetail invoice) throws Exception {
+    public byte[] build(InvoiceDetail invoice) throws Exception { return build(invoice,false); }
+    public byte[] build(InvoiceDetail invoice,boolean letterhead) throws Exception {
         ByteArrayOutputStream bytes=new ByteArrayOutputStream();
-        Document document=new Document(PageSize.A4,36,36,109,42);
+        Document document=new Document(PageSize.A4,36,36,letterhead?190:109,letterhead?100:42);
         PdfWriter writer=PdfWriter.getInstance(document,bytes);
+        URL letterheadImage=letterhead ? InvoicePdfBuilder.class.getResource("/invoice-letterhead.png") : null;
+        if(letterhead && letterheadImage==null) throw new IllegalStateException("Invoice letterhead resource is missing");
         writer.setPageEvent(new PdfPageEventHelper() {
+            @Override public void onEndPage(PdfWriter writer,Document document) {
+                if(letterheadImage!=null) try {
+                    addLetterhead(writer,letterheadImage);
+                } catch(Exception error) { throw new ExceptionConverter(error); }
+            }
             @Override public void onStartPage(PdfWriter writer,Document document) {
                 if(writer.getPageNumber()==1) {
                     ColumnText.showTextAligned(writer.getDirectContent(),Element.ALIGN_CENTER,
-                            new Phrase("Invoice",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK)),
-                            PageSize.A4.getWidth()/2,PageSize.A4.getTop(36),0);
+                            new Phrase("Tax Invoice",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK)),
+                            PageSize.A4.getWidth()/2,PageSize.A4.getTop(letterhead?142:36),0);
                 }
             }
         });
         document.open();
-        Paragraph invoiceMeta=new Paragraph("Invoice No.: "+invoice.getInvoiceId()+"\nInvoice date: "+date(invoice.getInvoiceDate())+"    Financial year: "+invoice.getFyear()+"-"+(invoice.getFyear()+1),INVOICE_META);
-        invoiceMeta.setAlignment(Element.ALIGN_LEFT); invoiceMeta.setSpacingAfter(8); document.add(invoiceMeta);
         Client client=invoice.getClient();
-        Paragraph recipient=new Paragraph("BILL TO\n"+text(client.getClientName())+"\n"+text(client.getAddress())+"\nGST: "+text(client.getGSTno()),CLIENT);
-        recipient.setSpacingAfter(12); document.add(recipient);
+        PdfPTable detailsAndBillTo=new PdfPTable(2); detailsAndBillTo.setWidthPercentage(100);
+        detailsAndBillTo.setWidths(new float[]{1,1});
+        cell(detailsAndBillTo,"INVOICE DETAILS",true); cell(detailsAndBillTo,"BILL TO",true);
+        cell(detailsAndBillTo,"Invoice No.: "+text(invoice.getInvoiceId())+"\nInvoice date: "+date(invoice.getInvoiceDate())+"\nFinancial year: "+invoice.getFyear()+"-"+(invoice.getFyear()+1),false);
+        cell(detailsAndBillTo,text(client.getClientName())+"\n"+text(client.getAddress())+"\nGST: "+text(client.getGSTno()),false);
+        detailsAndBillTo.setSpacingAfter(14); document.add(detailsAndBillTo);
         PdfPTable header=new PdfPTable(2); header.setWidthPercentage(100);
         cell(header,"Buyer order: "+text(invoice.getBuyerDoc()),false); cell(header,"Order date: "+date(invoice.getBuyerDocDate()),false);
         cell(header,"Delivery note: "+text(invoice.getDeliveryDoc()),false); cell(header,"Delivery date: "+date(invoice.getDeliveryDate()),false);
