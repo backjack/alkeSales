@@ -1,11 +1,10 @@
 <section class="page documents-page">
   <div class="page-heading">
     <div><p class="eyebrow">DOCUMENT STORAGE</p><h1>Documents</h1><p>Upload PDFs and images into financial-year folders in Google Drive.</p></div>
-    @if (configured && !connected) { <button class="primary" (click)="connect()">Connect Google Drive</button> }
   </div>
 
-  @if (!configured) { <div class="drive-notice error">Google Drive is not configured. Add the Google OAuth environment variables to Spring Boot.</div> }
-  @else if (!connected) { <div class="drive-notice">Connect the application's Google Drive account before uploading documents.</div> }
+  @if (!configured) { <div class="drive-notice error">Google Drive is not configured. Contact an administrator to configure the shared Drive service account.</div> }
+  @else if (!connected) { <div class="drive-notice error">The shared Google Drive connection is unavailable. Contact an administrator.</div> }
   @if (error) { <div class="error">{{ error }}</div> }
   @if (message) { <div class="success-message">{{ message }}</div> }
 

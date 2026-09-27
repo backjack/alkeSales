@@ -3,14 +3,11 @@ package com.alkefp.sales.controller;
 import com.alkefp.sales.beans.BaseResponse;
 import com.alkefp.sales.documents.DocumentRecord;
 import com.alkefp.sales.documents.GoogleDriveDocumentService;
-import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.http.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.net.URI;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.format.TextStyle;
@@ -25,22 +22,6 @@ public class DocumentController {
     @GetMapping("/google/status")
     public BaseResponse<Map<String, Boolean>> status() {
         return response(Map.of("configured", service.configured(), "connected", service.connected()));
-    }
-
-    @GetMapping("/google/connect")
-    public void connect(HttpSession session, HttpServletResponse response) throws java.io.IOException {
-        String state = UUID.randomUUID().toString();
-        session.setAttribute("googleDriveOauthState", state);
-        response.sendRedirect(service.authorizationUrl(state));
-    }
-
-    @GetMapping("/google/callback")
-    public ResponseEntity<Void> callback(@RequestParam String code, @RequestParam String state, HttpSession session) {
-        Object expected = session.getAttribute("googleDriveOauthState");
-        if (expected == null || !expected.equals(state)) return ResponseEntity.badRequest().build();
-        session.removeAttribute("googleDriveOauthState");
-        service.exchangeAuthorizationCode(code);
-        return ResponseEntity.status(HttpStatus.FOUND).location(URI.create("/documents?google=connected")).build();
     }
 
     @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)

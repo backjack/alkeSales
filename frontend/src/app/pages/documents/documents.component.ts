@@ -31,7 +31,6 @@ export class DocumentsComponent implements OnInit {
   get years() { const current = this.financialYear(new Date()); return Array.from({ length: 8 }, (_, i) => current + 1 - i); }
 
   refreshStatus() { this.api.getDriveStatus().subscribe({ next: r => { this.configured = r.data.configured; this.connected = r.data.connected; }, error: () => this.error = 'Could not read Google Drive status.' }); }
-  connect() { window.location.href = '/documents/google/connect'; }
   chooseFiles(event: Event) {
     const input = event.target as HTMLInputElement;
     this.selectedFiles = Array.from(input.files ?? []); this.error = ''; this.message = '';

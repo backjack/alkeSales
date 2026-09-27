@@ -27,6 +27,9 @@
         },
         "serve": {
           "builder": "@angular/build:dev-server",
+          "options": {
+            "proxyConfig": "proxy.conf.json"
+          },
           "configurations": {
             "production": { "buildTarget": "alke-sales-ui:build:production" },
             "development": { "buildTarget": "alke-sales-ui:build:development" }

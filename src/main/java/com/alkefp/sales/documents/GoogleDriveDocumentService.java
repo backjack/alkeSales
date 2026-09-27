@@ -1,11 +1,17 @@
 package com.alkefp.sales.documents;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.auth.oauth2.AccessToken;
+import com.google.auth.oauth2.GoogleCredentials;
+import com.google.auth.oauth2.ServiceAccountCredentials;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 import jakarta.annotation.PostConstruct;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -15,7 +21,6 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -24,12 +29,14 @@ import java.util.zip.ZipOutputStream;
 
 @Service
 public class GoogleDriveDocumentService {
-    private static final String DRIVE_SCOPE = "https://www.googleapis.com/auth/drive.file";
+    private static final Logger log = LoggerFactory.getLogger(GoogleDriveDocumentService.class);
+    private static final String DRIVE_SCOPE = "https://www.googleapis.com/auth/drive";
     private static final String FOLDER_MIME = "application/vnd.google-apps.folder";
     private final JdbcTemplate jdbc;
     private final GoogleDriveProperties properties;
     private final ObjectMapper mapper;
     private final HttpClient http = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
+    private GoogleCredentials credentials;
 
     public GoogleDriveDocumentService(JdbcTemplate jdbc, GoogleDriveProperties properties, ObjectMapper mapper) {
         this.jdbc = jdbc; this.properties = properties; this.mapper = mapper;
@@ -37,38 +44,26 @@ public class GoogleDriveDocumentService {
 
     @PostConstruct
     void initializeTables() {
-        jdbc.execute("create table if not exists google_drive_oauth (id int primary key, access_token text, refresh_token text, expires_at bigint, root_folder_id varchar(255), updated_at timestamp default current_timestamp)");
+        initializeCredentials();
+        log.info("Google Drive service-account configuration: keyPresent={}, rootFolderIdPresent={}, configured={}",
+                !properties.getServiceAccountJsonBase64().isBlank(), !properties.getRootFolderId().isBlank(), configured());
         jdbc.execute("create table if not exists uploaded_document (id bigint primary key auto_increment, original_name varchar(500) not null, mime_type varchar(150) not null, size_bytes bigint not null, drive_file_id varchar(255) not null unique, drive_folder_id varchar(255) not null, document_date date not null, financial_year int not null, document_month int not null, uploaded_by varchar(150) not null, uploaded_at timestamp default current_timestamp, index idx_document_period(financial_year, document_month))");
     }
 
-    public boolean configured() { return properties.configured(); }
+    public boolean configured() { return credentials != null; }
     public boolean connected() {
-        Integer count = jdbc.queryForObject("select count(*) from google_drive_oauth where id=1 and refresh_token is not null", Integer.class);
-        return count != null && count > 0;
-    }
-
-    public String authorizationUrl(String state) {
-        requireConfigured();
-        return "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + enc(properties.getClientId())
-                + "&redirect_uri=" + enc(properties.getRedirectUri()) + "&response_type=code&scope=" + enc(DRIVE_SCOPE)
-                + "&access_type=offline&prompt=consent&state=" + enc(state);
-    }
-
-    public void exchangeAuthorizationCode(String code) {
-        requireConfigured();
-        JsonNode token = sendForm("code=" + enc(code) + "&client_id=" + enc(properties.getClientId())
-                + "&client_secret=" + enc(properties.getClientSecret()) + "&redirect_uri=" + enc(properties.getRedirectUri())
-                + "&grant_type=authorization_code");
-        String refresh = token.path("refresh_token").asText("");
-        if (refresh.isBlank()) refresh = jdbc.query("select refresh_token from google_drive_oauth where id=1", rs -> rs.next() ? rs.getString(1) : "");
-        if (refresh == null || refresh.isBlank()) throw new IllegalStateException("Google did not return a refresh token");
-        long expiry = Instant.now().getEpochSecond() + token.path("expires_in").asLong(3600) - 60;
-        jdbc.update("insert into google_drive_oauth(id,access_token,refresh_token,expires_at,updated_at) values(1,?,?,?,current_timestamp) on duplicate key update access_token=values(access_token),refresh_token=values(refresh_token),expires_at=values(expires_at),updated_at=current_timestamp",
-                token.path("access_token").asText(), refresh, expiry);
+        if (!configured()) return false;
+        try {
+            credentials.refreshIfExpired();
+            return credentials.getAccessToken() != null;
+        } catch (IOException e) {
+            log.warn("Google Drive service-account token refresh failed: {}", e.getMessage());
+            return false;
+        }
     }
 
     public List<DocumentRecord> upload(LocalDate date, MultipartFile[] files, String username) {
-        if (!connected()) throw new IllegalStateException("Connect Google Drive before uploading files");
+        if (!connected()) throw new IllegalStateException("Google Drive service account is unavailable");
         if (files == null || files.length == 0) throw new IllegalArgumentException("Select at least one file");
         if (files.length > 20) throw new IllegalArgumentException("A maximum of 20 files can be uploaded together");
         int fy = financialYear(date);
@@ -114,12 +109,7 @@ public class GoogleDriveDocumentService {
     public static int financialYear(LocalDate date) { return date.getMonthValue() >= 4 ? date.getYear() : date.getYear() - 1; }
 
     private String rootFolder() {
-        if (!properties.getRootFolderId().isBlank()) return properties.getRootFolderId();
-        String existing = jdbc.query("select root_folder_id from google_drive_oauth where id=1", rs -> rs.next() ? rs.getString(1) : null);
-        if (existing != null && !existing.isBlank()) return existing;
-        String created = findOrCreateFolder("ALKE Documents", null);
-        jdbc.update("update google_drive_oauth set root_folder_id=? where id=1", created);
-        return created;
+        return properties.getRootFolderId();
     }
 
     private String findOrCreateFolder(String name, String parent) {
@@ -159,18 +149,8 @@ public class GoogleDriveDocumentService {
     }
     private HttpRequest.Builder authorized(URI uri) { return HttpRequest.newBuilder(uri).header("Authorization", "Bearer " + accessToken()); }
     private String accessToken() {
-        return jdbc.query("select access_token,refresh_token,expires_at from google_drive_oauth where id=1", rs -> {
-            if (!rs.next()) throw new IllegalStateException("Google Drive is not connected");
-            if (rs.getLong("expires_at") > Instant.now().getEpochSecond()) return rs.getString("access_token");
-            JsonNode token = sendForm("client_id=" + enc(properties.getClientId()) + "&client_secret=" + enc(properties.getClientSecret()) + "&refresh_token=" + enc(rs.getString("refresh_token")) + "&grant_type=refresh_token");
-            long expiry = Instant.now().getEpochSecond() + token.path("expires_in").asLong(3600) - 60;
-            jdbc.update("update google_drive_oauth set access_token=?,expires_at=?,updated_at=current_timestamp where id=1", token.path("access_token").asText(), expiry);
-            return token.path("access_token").asText();
-        });
-    }
-    private JsonNode sendForm(String form) {
-        HttpRequest request = HttpRequest.newBuilder(URI.create("https://oauth2.googleapis.com/token")).header("Content-Type", "application/x-www-form-urlencoded").POST(HttpRequest.BodyPublishers.ofString(form)).build();
-        return parse(send(request));
+        if (!connected()) throw new IllegalStateException("Google Drive service account is unavailable");
+        return credentials.getAccessToken().getTokenValue();
     }
     private HttpResponse<String> send(HttpRequest request) {
         try {
@@ -180,13 +160,24 @@ public class GoogleDriveDocumentService {
         } catch (IOException e) { throw new IllegalStateException("Google API request failed", e); }
         catch (InterruptedException e) { Thread.currentThread().interrupt(); throw new IllegalStateException("Google API request interrupted", e); }
     }
-    private JsonNode parse(HttpResponse<String> response) { try { return mapper.readTree(response.body()); } catch (IOException e) { throw new IllegalStateException("Invalid response from Google", e); } }
+    private JsonNode parse(HttpResponse<String> response) { try { return mapper.readTree(response.body()); } catch (JacksonException e) { throw new IllegalStateException("Invalid response from Google", e); } }
     private void validate(MultipartFile file) {
         if (file.isEmpty()) throw new IllegalArgumentException("Empty files cannot be uploaded");
         if (file.getSize() > 25L * 1024 * 1024) throw new IllegalArgumentException(cleanName(file.getOriginalFilename()) + " exceeds 25 MB");
         if (!Set.of("application/pdf", "image/jpeg", "image/png", "image/webp").contains(contentType(file))) throw new IllegalArgumentException("Only PDF, JPG, PNG and WebP files are supported");
     }
-    private void requireConfigured() { if (!configured()) throw new IllegalStateException("Google Drive OAuth is not configured"); }
+    private void initializeCredentials() {
+        if (!properties.configured()) return;
+        try {
+            byte[] key = Base64.getDecoder().decode(properties.getServiceAccountJsonBase64());
+            try (java.io.ByteArrayInputStream input = new java.io.ByteArrayInputStream(key)) {
+                credentials = ServiceAccountCredentials.fromStream(input).createScoped(List.of(DRIVE_SCOPE));
+            }
+        } catch (IllegalArgumentException | IOException e) {
+            log.error("Google Drive service-account credentials could not be loaded", e);
+            credentials = null;
+        }
+    }
     private String contentType(MultipartFile file) { return Optional.ofNullable(file.getContentType()).orElse("application/octet-stream").toLowerCase(); }
     private String cleanName(String name) { return Optional.ofNullable(name).orElse("document").replaceAll("[\\r\\n/\\\\]", "_"); }
     private String json(String value) { try { return mapper.writeValueAsString(value); } catch (Exception e) { throw new IllegalStateException(e); } }
