@@ -43,7 +43,7 @@ public class InvoicePdfBuilder {
             @Override public void onStartPage(PdfWriter writer,Document document) {
                 if(writer.getPageNumber()==1) {
                     ColumnText.showTextAligned(writer.getDirectContent(),Element.ALIGN_CENTER,
-                            new Phrase("TAX INVOICE",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK)),
+                            new Phrase("Invoice",FontFactory.getFont(FontFactory.HELVETICA_BOLD,18,INK)),
                             PageSize.A4.getWidth()/2,PageSize.A4.getTop(36),0);
                 }
             }
