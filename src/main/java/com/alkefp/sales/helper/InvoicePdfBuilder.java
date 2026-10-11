@@ -19,7 +19,7 @@ public class InvoicePdfBuilder {
     private static final Font FOOTER_HEADING=FontFactory.getFont(FontFactory.HELVETICA_BOLD,8,Font.NORMAL,INK);
     private static final Font FOOTER_TEXT=FontFactory.getFont(FontFactory.HELVETICA,8,Font.NORMAL,INK);
     private static final Font FOOTER_ADDRESS=FontFactory.getFont(FontFactory.HELVETICA,7,Font.NORMAL,INK);
-    private static final String SUPPLIER_GST="27AAKCS1815L1Z2";
+    private static final String SUPPLIER_GST="27BIIPS2126N1ZT";
     // The supplied letterhead PNG includes a translucent drop shadow around its A4 artwork.
     // Render only the opaque page canvas so PDFs have no artificial outer border.
     private static final float LETTERHEAD_SOURCE_WIDTH=2752f;
