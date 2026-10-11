@@ -1,0 +1,6 @@
+app:
+  datasource:
+    maximum-pool-size: 2
+    connection-timeout-ms: 10000
+    idle-timeout-ms: 60000
+    max-lifetime-ms: 300000

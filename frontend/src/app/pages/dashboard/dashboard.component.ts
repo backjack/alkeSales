@@ -30,7 +30,7 @@ import { MatSelectModule } from '@angular/material/select';
     </div>
     <div class="dashboard-grid">
       <article class="panel chart-panel"><div class="panel-head"><div><h2>Invoice revenue by month</h2><p>Invoice revenue across the selected financial year (April to March)</p></div></div>
-        <div class="bars" *ngIf="monthRows.length; else emptyChart"><div class="bar-row" *ngFor="let row of monthRows"><span title="{{row.name}}">{{row.name}}</span><div class="bar-track"><i [style.width.%]="row.percent"></i></div><strong>{{row.revenue | currency:'INR':'symbol':'1.0-0'}}</strong></div></div>
+        <div class="bars" *ngIf="monthRows.length; else emptyChart"><div class="bar-row" *ngFor="let row of monthRows"><span title="{{row.name}}">{{row.name}}</span><div class="bar-track" tabindex="0" (mouseenter)="showMonthTooltip(row.name,row.revenue)" (mouseleave)="hideMonthTooltip()" (focus)="showMonthTooltip(row.name,row.revenue)" (blur)="hideMonthTooltip()"><i [style.width.%]="row.percent"></i><ng-container *ngIf="monthTooltip as tooltip"><span class="bar-tooltip" *ngIf="tooltip.name === row.name">{{tooltip.name}} · {{tooltip.revenue | currency:'INR':'symbol':'1.0-0'}}</span></ng-container></div><strong>{{row.revenue | currency:'INR':'symbol':'1.0-0'}}</strong></div></div>
         <ng-template #emptyChart><p class="empty">No client revenue found.</p></ng-template>
       </article>
       <article class="panel"><div class="panel-head"><div><h2>Revenue by client</h2><p>Invoice count and total revenue</p></div></div>
@@ -50,6 +50,7 @@ export class DashboardComponent implements OnInit {
   selectedYear = 0; selectedClient = 0; loading = true; fyLoading = true; error = '';
   overview: Overview & { netRevenue: number } = { sumBill: 0, sumPartPymt: 0, invoiceCount: 0, netRevenue: 0 };
   clientSales?: ClientSales; monthlySales?: MonthlySales;
+  monthTooltip?: { name: string; revenue: number };
   ngOnInit() {
     const current = this.api.currentFinancialYearKey();
     this.api.getYears().pipe(finalize(() => this.changeDetector.markForCheck())).subscribe({ next: response => { this.years = response.data ?? []; this.selectedYear = this.years.find(year => year.key === current)?.key ?? this.years.at(-1)?.key ?? this.years[0]?.key ?? current; this.fyLoading = false; this.refresh(); }, error: () => { this.error = 'Could not load financial years.'; this.fyLoading = false; this.loading = false; } });
@@ -62,6 +63,8 @@ export class DashboardComponent implements OnInit {
   get matchingClients() { const query=(typeof this.clientFilterValue==='string'?this.clientFilterValue:'').trim().toLowerCase(); return [...(query?[]:[{key:0,value:'All clients'}]),...this.clients.filter(client=>!query||client.value.toLowerCase().includes(query))].slice(0,60); }
   onClientInput(value: Option | string) { if(typeof value!=='string') return; this.clientFilterValue=value; if(this.selectedClient && value!==this.clients.find(client=>client.key===this.selectedClient)?.value){this.selectedClient=0;this.refresh();} }
   selectClient(client: Option) { this.clientFilterValue=client; if(this.selectedClient!==client.key){this.selectedClient=client.key;this.refresh();} }
+  showMonthTooltip(name: string, revenue: number) { this.monthTooltip = { name, revenue }; }
+  hideMonthTooltip() { this.monthTooltip = undefined; }
   get clientSummary() { const rows=new Map<string,{name:string;count:number;revenue:number}>(); this.invoices.forEach(invoice=>{const name=invoice.clientName||'Unknown client';const row=rows.get(name)??{name,count:0,revenue:0};row.count++;row.revenue+=Number(invoice.totalAmt)||0;rows.set(name,row);}); return [...rows.values()].sort((a,b)=>b.revenue-a.revenue||b.count-a.count||a.name.localeCompare(b.name)).slice(0,8); }
   get clientRows() { const labels = this.clientSales?.clientName ?? []; const values = this.clientSales?.dataSets?.[0]?.data ?? []; const max = Math.max(...values, 1); return labels.map((name, i) => ({name, revenue: values[i] ?? 0, percent: ((values[i] ?? 0) / max) * 100})).filter(x => !this.selectedClient || x.name === this.clients.find(c => c.key === this.selectedClient)?.value).sort((a,b) => b.revenue-a.revenue).slice(0,8); }
   get monthRows() { const values = this.monthlySales?.dataSets?.find(x => x.label.toLowerCase() === 'sales')?.data ?? []; const names=['Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar']; const max=Math.max(...values,1); return names.map((name,i)=>({name,revenue:values[i]??0,percent:((values[i]??0)/max)*100})).filter(x=>x.revenue>0); }

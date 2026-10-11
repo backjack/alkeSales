@@ -249,3 +249,8 @@ html {
 .confirm-actions .icon-button{width:40px!important}
 @media(max-width:520px){.confirm-actions .icon-button{width:100%!important}}
 @media(max-width:720px){.dashboard-filters .mat-mdc-form-field{flex:0 0 auto;width:100%;min-width:0}}
+
+/* Dashboard revenue bars expose their exact value on pointer and keyboard focus. */
+.bar-track{position:relative;overflow:visible;cursor:crosshair}
+.bar-track:focus{outline:2px solid #6f4bea;outline-offset:3px}
+.bar-tooltip{position:absolute;z-index:4;left:50%;bottom:calc(100% + 8px);transform:translateX(-50%);min-width:max-content;padding:7px 9px;border-radius:7px;background:#172034;color:#fff;font-size:11px;line-height:1.2;box-shadow:0 8px 18px #17203433;pointer-events:none}

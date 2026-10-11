@@ -2,9 +2,11 @@ package com.alkefp.sales.config;
 
 import javax.sql.DataSource;
 
+import com.zaxxer.hikari.HikariDataSource;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -22,6 +24,7 @@ public class SalesConfiguration implements WebMvcConfigurer {
 
 
 	@Bean
+	@Profile("!local")
 	public DataSource dataSource() {
 
 		DriverManagerDataSource  dataSource = new DriverManagerDataSource();
@@ -35,18 +38,34 @@ public class SalesConfiguration implements WebMvcConfigurer {
 		return dataSource;
 	}
 
-	@Bean
-	public JdbcTemplate getJDBCTemplate() {
-
-		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource());
-		return jdbcTemplate;
+	@Bean(destroyMethod = "close")
+	@Profile("local")
+	public DataSource localDataSource(@Value("${app.datasource.maximum-pool-size:2}") int maximumPoolSize,
+			@Value("${app.datasource.connection-timeout-ms:10000}") long connectionTimeoutMs,
+			@Value("${app.datasource.idle-timeout-ms:60000}") long idleTimeoutMs,
+			@Value("${app.datasource.max-lifetime-ms:300000}") long maxLifetimeMs) {
+		HikariDataSource dataSource = new HikariDataSource();
+		dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
+		dataSource.setJdbcUrl(System.getenv("url"));
+		dataSource.setUsername(System.getenv("user"));
+		dataSource.setPassword(System.getenv("password"));
+		dataSource.setMaximumPoolSize(maximumPoolSize);
+		dataSource.setMinimumIdle(0);
+		dataSource.setConnectionTimeout(connectionTimeoutMs);
+		dataSource.setIdleTimeout(idleTimeoutMs);
+		dataSource.setMaxLifetime(maxLifetimeMs);
+		dataSource.setPoolName("alke-local");
+		return dataSource;
 	}
 
 	@Bean
-	public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate() {
-		
-		NamedParameterJdbcTemplate  namedjdbcTemplate = new NamedParameterJdbcTemplate(dataSource());
-		return namedjdbcTemplate;
+	public JdbcTemplate getJDBCTemplate(DataSource dataSource) {
+		return new JdbcTemplate(dataSource);
+	}
+
+	@Bean
+	public NamedParameterJdbcTemplate getNamedParameterJdbcTemplate(DataSource dataSource) {
+		return new NamedParameterJdbcTemplate(dataSource);
 	}
 	public String getUrl() {
 		return url;

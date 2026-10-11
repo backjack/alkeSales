@@ -35,15 +35,11 @@
 
     <article class="panel analytics-panel comparison-panel">
       <div class="panel-head">
-        <div><h2>Financial year comparison</h2><p>Compare the same month across every available financial year</p></div>
+        <div><h2>Financial year comparison</h2><p>Compare the same month across the latest three financial years</p></div>
         <div class="comparison-controls">
           <label class="chart-select">Revenue measure<select [(ngModel)]="comparisonMetric" (ngModelChange)="buildComparisonChart()"><option value="total">Total revenue</option><option value="net">Revenue post tax</option></select></label>
           <label class="chart-select">View<select [(ngModel)]="comparisonView" (ngModelChange)="buildComparisonChart()"><option value="monthly">Month by month</option><option value="cumulative">Cumulative</option></select></label>
         </div>
-      </div>
-      <div class="comparison-years">
-        <strong>Financial years</strong>
-        <label *ngFor="let year of years" [class.selected]="comparisonYears.has(year.key)"><input type="checkbox" [checked]="comparisonYears.has(year.key)" (change)="toggleComparisonYear(year.key, $any($event.target).checked)">{{year.value}}</label>
       </div>
       <div class="chart-legend year-legend"><span *ngFor="let series of comparisonChart.series"><i [style.background]="series.color"></i>{{series.label}}</span></div>
       <ng-container *ngTemplateOutlet="lineChart; context: {$implicit: comparisonChart}"></ng-container>
@@ -52,6 +48,7 @@
 
   <ng-template #lineChart let-chart>
     <div class="line-chart" [class.is-empty]="chart.empty">
+      <div class="chart-tooltip" *ngIf="tooltip" role="status"><strong>{{tooltip.label}}</strong><span>{{tooltip.month}} · {{tooltip.value | currency:'INR':'symbol':'1.0-0'}}</span></div>
       <svg viewBox="0 0 1000 360" role="img" aria-label="Revenue line chart">
         <g *ngFor="let line of gridLines; let i=index" class="chart-grid">
           <line x1="70" x2="970" [attr.y1]="gridY(i)" [attr.y2]="gridY(i)"></line>
@@ -61,7 +58,7 @@
         <g *ngFor="let month of months; let i=index"><text class="month-label" [attr.x]="x(i)" y="340">{{month}}</text></g>
         <g *ngFor="let series of chart.series">
           <path class="series-line" [attr.d]="series.path" [attr.stroke]="series.color"></path>
-          <circle *ngFor="let point of series.points; let i=index" [attr.cx]="point.x" [attr.cy]="point.y" r="4" [attr.fill]="series.color"><title>{{series.label}} · {{months[i]}} · {{point.value | currency:'INR':'symbol':'1.0-0'}}</title></circle>
+          <circle *ngFor="let point of series.points; let i=index" [attr.cx]="point.x" [attr.cy]="point.y" r="4" [attr.fill]="series.color" tabindex="0" (mouseenter)="showTooltip(series.label, months[i], point.value)" (mouseleave)="hideTooltip()" (focus)="showTooltip(series.label, months[i], point.value)" (blur)="hideTooltip()"><title>{{series.label}} · {{months[i]}} · {{point.value | currency:'INR':'symbol':'1.0-0'}}</title></circle>
         </g>
       </svg>
       <p *ngIf="chart.empty">No revenue recorded for this selection.</p>

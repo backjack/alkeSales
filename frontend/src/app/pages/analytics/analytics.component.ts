@@ -7,6 +7,7 @@ import { MonthlySales, Option, SalesApiService } from '../../core/sales-api.serv
 interface ChartPoint { x: number; y: number; value: number; }
 interface ChartSeries { label: string; color: string; values: number[]; points: ChartPoint[]; path: string; }
 interface ChartModel { max: number; empty: boolean; series: ChartSeries[]; }
+interface ChartTooltip { label: string; month: string; value: number; }
 
 @Component({
   selector: 'app-analytics',
@@ -26,7 +27,8 @@ export class AnalyticsComponent implements OnInit {
   selectedYear = 0;
   comparisonMetric: 'total' | 'net' = 'total';
   comparisonView: 'monthly' | 'cumulative' = 'monthly';
-  comparisonYears = new Set<number>();
+  readonly comparisonYears = new Set<number>();
+  tooltip?: ChartTooltip;
   loading = true;
   error = '';
   monthlyChart: ChartModel = this.emptyChart();
@@ -42,7 +44,8 @@ export class AnalyticsComponent implements OnInit {
       next: response => {
         this.years = [...(response.data ?? [])].sort((a, b) => a.key - b.key);
         this.selectedYear = this.years.find(year => year.key === current)?.key ?? this.years.at(-1)?.key ?? current;
-        this.comparisonYears = new Set(this.years.map(year => year.key));
+        this.comparisonYears.clear();
+        this.years.slice(-3).forEach(year => this.comparisonYears.add(year.key));
         this.refresh();
       },
       error: () => {
@@ -57,12 +60,13 @@ export class AnalyticsComponent implements OnInit {
     if (!this.years.length) return;
     this.loading = true;
     this.error = '';
-    forkJoin(this.years.map(year => this.api.getMonthlySales(year.key)))
+    const yearsToLoad = [...new Set([...this.years.slice(-3).map(year => year.key), this.selectedYear])];
+    forkJoin(yearsToLoad.map(year => this.api.getMonthlySales(year)))
       .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
         next: responses => {
           this.monthlyByYear.clear();
-          responses.forEach((response, index) => this.monthlyByYear.set(this.years[index].key, response.data));
+          responses.forEach((response, index) => this.monthlyByYear.set(yearsToLoad[index], response.data));
           this.buildCharts();
           this.loading = false;
         },
@@ -98,11 +102,8 @@ export class AnalyticsComponent implements OnInit {
     })));
   }
 
-  toggleComparisonYear(year: number, selected: boolean) {
-    if (selected) this.comparisonYears.add(year);
-    else this.comparisonYears.delete(year);
-    this.buildComparisonChart();
-  }
+  showTooltip(label: string, month: string, value: number) { this.tooltip = { label, month, value }; }
+  hideTooltip() { this.tooltip = undefined; }
 
   get selectedYearLabel() { return this.years.find(year => year.key === this.selectedYear)?.value ?? this.selectedYear; }
   get taxDifference() { return Math.max(0, this.totalRevenue - this.netRevenue); }
