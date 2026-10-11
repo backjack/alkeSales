@@ -221,6 +221,18 @@ html {
 .invoice-item-option-description{overflow-wrap:anywhere;color:#263147;font:600 13px/18px 'DM Sans',Arial,sans-serif}
 .invoice-item-option-meta{color:#758096;font:12px/16px 'DM Sans',Arial,sans-serif}
 
+/* On touch-sized screens, let the invoice editor use the viewport rather than
+   squeezing its form and item grid into the desktop 80vw modal width. */
+@media(max-width:900px){
+  .detail-backdrop{align-items:stretch;padding:12px}
+  .invoice-detail.editor{width:100%;max-width:none;max-height:calc(100dvh - 24px);padding:28px 22px}
+}
+@media(max-width:620px){
+  .detail-backdrop{padding:8px}
+  .invoice-detail.editor{max-height:calc(100dvh - 16px);padding:54px 14px 20px;border-radius:10px}
+  .detail-close{right:14px;top:12px}
+}
+
 /* Dashboard client totals and interactive recent invoices. */
 .client-summary{padding:8px 20px 14px}
 .client-summary-head,.client-summary-row{display:grid;grid-template-columns:minmax(0,1fr) 64px 112px;gap:10px;align-items:center}
