@@ -45,6 +45,13 @@ public class InvoiceWordBuilder {
     private static final String GRID="E2E7EF";
     private static final String HEADER="EFF2F8";
     private static final String SUPPLIER_GST="27AAKCS1815L1Z2";
+    // Coordinates of the opaque A4 canvas inside invoice-letterhead.png.
+    private static final float LETTERHEAD_SOURCE_WIDTH=2752f;
+    private static final float LETTERHEAD_SOURCE_HEIGHT=3874f;
+    private static final float LETTERHEAD_PAGE_LEFT=75f;
+    private static final float LETTERHEAD_PAGE_TOP=100f;
+    private static final float LETTERHEAD_PAGE_RIGHT=81f;
+    private static final float LETTERHEAD_PAGE_BOTTOM=96f;
 
     public byte[] build(InvoiceDetail invoice) throws Exception { return build(invoice,false); }
     public byte[] build(InvoiceDetail invoice,boolean letterhead) throws Exception {
@@ -180,12 +187,21 @@ public class InvoiceWordBuilder {
         org.w3c.dom.Document xml=picture.getDomNode().getOwnerDocument();
         org.w3c.dom.Element shapeElement=xml.createElementNS("urn:schemas-microsoft-com:vml","v:shape");
         shapeElement.setAttribute("id","InvoiceLetterhead"); shapeElement.setAttribute("type","#_x0000_t75");
-        shapeElement.setAttribute("style","position:absolute;left:0;top:0;width:8.27in;height:11.69in;z-index:-251654144;mso-position-horizontal-relative:page;mso-position-vertical-relative:page");
+        shapeElement.setAttribute("style","position:absolute;left:0;top:0;width:8.27in;height:11.69in;z-index:-251654144;mso-position-horizontal-relative:page;mso-position-vertical-relative:page;mso-wrap-style:none");
         shapeElement.setAttribute("filled","f"); shapeElement.setAttribute("stroked","f");
+        shapeElement.setAttributeNS("urn:schemas-microsoft-com:office:office","o:allowoverlap","t");
         org.w3c.dom.Element imageElement=xml.createElementNS("urn:schemas-microsoft-com:vml","v:imagedata");
         imageElement.setAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","r:id",relationshipId);
         imageElement.setAttributeNS("urn:schemas-microsoft-com:office:office","o:title","Invoice letterhead");
+        imageElement.setAttribute("cropleft",cropFraction(LETTERHEAD_PAGE_LEFT,LETTERHEAD_SOURCE_WIDTH));
+        imageElement.setAttribute("croptop",cropFraction(LETTERHEAD_PAGE_TOP,LETTERHEAD_SOURCE_HEIGHT));
+        imageElement.setAttribute("cropright",cropFraction(LETTERHEAD_PAGE_RIGHT,LETTERHEAD_SOURCE_WIDTH));
+        imageElement.setAttribute("cropbottom",cropFraction(LETTERHEAD_PAGE_BOTTOM,LETTERHEAD_SOURCE_HEIGHT));
         shapeElement.appendChild(imageElement); picture.getDomNode().appendChild(shapeElement);
+    }
+
+    private static String cropFraction(float pixels,float dimension) {
+        return String.format(Locale.US,"%.6f",pixels/dimension);
     }
 
     private static void title(XWPFDocument document,String value) {
