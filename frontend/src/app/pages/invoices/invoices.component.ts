@@ -175,7 +175,7 @@ export class InvoicesComponent implements OnInit {
   displayClientOption = (option: Option | string | null): string => typeof option === 'string' ? option : option?.value ?? '';
   get matchingFilterClients(): Option[] {
     const query = (typeof this.clientFilterValue === 'string' ? this.clientFilterValue : '').trim().toLowerCase();
-    return [...(query ? [] : [{ key: 0, value: 'All clients' }]), ...this.clients.filter(option => !query || option.value.toLowerCase().includes(query))].slice(0, 60);
+    return [...(query ? [] : [{ key: 0, value: 'All clients' }]), ...this.clients.filter(option => !query || option.value.toLowerCase().includes(query))];
   }
   onClientFilterInput(value: Option | string) {
     if (typeof value !== 'string') return;
@@ -187,7 +187,7 @@ export class InvoicesComponent implements OnInit {
   displayEditorClient = (client: Client | string | null): string => typeof client === 'string' ? client : client?.clientName ?? '';
   get matchingEditorClients(): Client[] {
     const query = (typeof this.editorClientValue === 'string' ? this.editorClientValue : '').trim().toLowerCase();
-    return this.clientRecords.filter(client => !query || client.clientName.toLowerCase().includes(query) || (client.GSTno || '').toLowerCase().includes(query)).slice(0, 60);
+    return this.clientRecords.filter(client => !query || client.clientName.toLowerCase().includes(query) || (client.GSTno || '').toLowerCase().includes(query));
   }
   onEditorClientInput(value: Client | string) {
     if (typeof value !== 'string') return;
