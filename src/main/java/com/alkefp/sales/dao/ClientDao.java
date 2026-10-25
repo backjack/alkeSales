@@ -17,7 +17,7 @@ public class ClientDao {
 	@Autowired
 	public JdbcTemplate jdbcTemplate;
 	private static final String GET_CLIENTS = "select clientId, clientName, address, telephone," +
-			" emailId, contact_person, shortName, gstNo, isActive from client where groupId = ?";
+			" emailId, contact_person, shortName, gstNo, isActive from client where groupId = ? order by clientName asc";
 	
 	private static final String UPDATE_CLIENT = "update client set clientName =?, address =?, telephone =?," +
 			" emailId =?, contact_person=?, shortName =?, gstNo =? where clientId = ? and groupId =?  and isActive = 'Y'";
