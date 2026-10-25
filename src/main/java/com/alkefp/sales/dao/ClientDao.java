@@ -17,7 +17,7 @@ public class ClientDao {
 	@Autowired
 	public JdbcTemplate jdbcTemplate;
 	private static final String GET_CLIENTS = "select clientId, clientName, address, telephone," +
-			" emailId, contact_person, shortName, gstNo from client where groupId = ? and isActive = 'Y'";
+			" emailId, contact_person, shortName, gstNo, isActive from client where groupId = ?";
 	
 	private static final String UPDATE_CLIENT = "update client set clientName =?, address =?, telephone =?," +
 			" emailId =?, contact_person=?, shortName =?, gstNo =? where clientId = ? and groupId =?  and isActive = 'Y'";
@@ -38,7 +38,7 @@ public class ClientDao {
 		public Client mapRow(ResultSet resultSet, int arg1) throws SQLException {
 			// TODO Auto-generated method stub
 			Client client = new Client();
-			client.setActive(true);
+			client.setActive("Y".equalsIgnoreCase(resultSet.getString("isActive")));
 			client.setId(resultSet.getInt("clientId"));
 			client.setClientName(resultSet.getString("clientName"));
 			client.setAddress(resultSet.getString("address"));
