@@ -39,6 +39,7 @@ export class SalesApiService {
   getClientOptions() { return this.http.get<ApiResponse<Option[]>>('/home/clients'); }
   getClients() { return this.http.get<ApiResponse<Client[]>>('/client/list'); }
   saveClient(client: Client, create: boolean) { return this.http.post<ApiResponse<Client>>(`/client/${create ? 'create' : 'update'}`, client); }
+  setClientActive(id: number, active: boolean) { return this.http.post<ApiResponse<Client>>('/client/status', { id, active }); }
   getItemOptions() { return this.http.get<ApiResponse<InvoiceItem[]>>('/invoice/editor/items'); }
   getInvoices(years: number[], clientids: number[] = []) {
     return this.http.post<ApiResponse<SaleSummary[]>>('/home/summary', { years, clientids });

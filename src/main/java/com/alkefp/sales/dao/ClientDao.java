@@ -21,6 +21,7 @@ public class ClientDao {
 	
 	private static final String UPDATE_CLIENT = "update client set clientName =?, address =?, telephone =?," +
 			" emailId =?, contact_person=?, shortName =?, gstNo =? where clientId = ? and groupId =?  and isActive = 'Y'";
+	private static final String UPDATE_CLIENT_STATUS = "update client set isActive = ? where clientId = ? and groupId = ?";
 	
 	private static final String INSERT_CLIENT = "insert into client  (clientName ,address ,telephone," +
 			" emailId ,contact_person,shortName,gstNo, clientId,groupId,isActive) values(?,?,?,?,?,?,?,?,?,'Y')";
@@ -61,6 +62,10 @@ public class ClientDao {
 			 return true;
 		}
 		return false;
+	}
+
+	public boolean updateClientStatus(int clientId, boolean active, String groupId) {
+		return jdbcTemplate.update(UPDATE_CLIENT_STATUS, active ? "Y" : "N", clientId, groupId) == 1;
 	}
 	
 	public boolean insertClient(Client client) {

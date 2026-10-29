@@ -42,7 +42,7 @@ export class AnalyticsComponent implements OnInit {
     const current = this.api.currentFinancialYearKey();
     this.api.getYears().subscribe({
       next: response => {
-        this.years = [...(response.data ?? [])].sort((a, b) => a.key - b.key);
+        this.years = (response.data ?? []).filter(year => year.key <= current).sort((a, b) => a.key - b.key);
         this.selectedYear = this.years.find(year => year.key === current)?.key ?? this.years.at(-1)?.key ?? current;
         this.comparisonYears.clear();
         this.years.slice(-3).forEach(year => this.comparisonYears.add(year.key));
@@ -60,7 +60,7 @@ export class AnalyticsComponent implements OnInit {
     if (!this.years.length) return;
     this.loading = true;
     this.error = '';
-    const yearsToLoad = [...new Set([...this.years.slice(-3).map(year => year.key), this.selectedYear])];
+    const yearsToLoad = [...new Set([...this.comparisonYears, this.selectedYear])].sort((a, b) => a - b);
     forkJoin(yearsToLoad.map(year => this.api.getMonthlySales(year)))
       .pipe(finalize(() => this.changeDetector.markForCheck()))
       .subscribe({
@@ -100,6 +100,19 @@ export class AnalyticsComponent implements OnInit {
       color: this.palette[index % this.palette.length],
       values: this.comparisonView === 'cumulative' ? this.cumulative(this.values(year.key, dataSet)) : this.values(year.key, dataSet)
     })));
+  }
+
+  onSelectedYearChange() { this.refresh(); }
+
+  toggleComparisonYear(year: number, selected: boolean) {
+    if (selected) {
+      if (this.comparisonYears.size >= 3) return;
+      this.comparisonYears.add(year);
+    } else {
+      if (this.comparisonYears.size <= 1) return;
+      this.comparisonYears.delete(year);
+    }
+    this.refresh();
   }
 
   showTooltip(label: string, month: string, value: number) { this.tooltip = { label, month, value }; }

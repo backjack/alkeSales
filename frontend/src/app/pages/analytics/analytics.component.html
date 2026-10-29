@@ -5,7 +5,7 @@
   </div>
 
   <div class="filter-bar" *ngIf="years.length">
-    <label>Financial year<select [(ngModel)]="selectedYear" (ngModelChange)="buildCharts()"><option *ngFor="let year of years" [ngValue]="year.key">{{year.value}}</option></select></label>
+    <label>Financial year<select [(ngModel)]="selectedYear" (ngModelChange)="onSelectedYearChange()"><option *ngFor="let year of years" [ngValue]="year.key">{{year.value}}</option></select></label>
     <span class="filter-note">April to March · values from invoice records</span>
   </div>
 
@@ -35,12 +35,13 @@
 
     <article class="panel analytics-panel comparison-panel">
       <div class="panel-head">
-        <div><h2>Financial year comparison</h2><p>Compare the same month across the latest three financial years</p></div>
+        <div><h2>Financial year comparison</h2><p>Compare the same month across up to three financial years</p></div>
         <div class="comparison-controls">
           <label class="chart-select">Revenue measure<select [(ngModel)]="comparisonMetric" (ngModelChange)="buildComparisonChart()"><option value="total">Total revenue</option><option value="net">Revenue post tax</option></select></label>
           <label class="chart-select">View<select [(ngModel)]="comparisonView" (ngModelChange)="buildComparisonChart()"><option value="monthly">Month by month</option><option value="cumulative">Cumulative</option></select></label>
         </div>
       </div>
+      <div class="comparison-years"><strong>Compare years</strong><label *ngFor="let year of years" [class.selected]="comparisonYears.has(year.key)"><input type="checkbox" [checked]="comparisonYears.has(year.key)" [disabled]="!comparisonYears.has(year.key) && comparisonYears.size >= 3" (change)="toggleComparisonYear(year.key, $any($event.target).checked)">{{year.value}}</label></div>
       <div class="chart-legend year-legend"><span *ngFor="let series of comparisonChart.series"><i [style.background]="series.color"></i>{{series.label}}</span></div>
       <ng-container *ngTemplateOutlet="lineChart; context: {$implicit: comparisonChart}"></ng-container>
     </article>
