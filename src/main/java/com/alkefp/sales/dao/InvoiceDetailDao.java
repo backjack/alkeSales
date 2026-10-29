@@ -74,7 +74,7 @@ public class InvoiceDetailDao {
 	
 	public InvoiceDetail getInvoiceDetail(final String invoiceId, final int fyyear, final String groupId) {
 		
-		String sql = "select c.clientId, c.clientName,c.address,c.shortName,delivery_note,delivery_date,buyer_order,c.gstNo," +
+		String sql = "select c.clientId, c.clientName,c.address,c.shortName,c.isActive,delivery_note,delivery_date,buyer_order,c.gstNo," +
 				"buyer_date,destination,despatched,s.invoiceDate " +
 				"from invoice_header h RIGHT join sales s " +
 				" on h.invoiceId = s.invoiceId and h.groupId = s.groupId and h.fyYear= s.fyYear join client c " +
@@ -105,6 +105,7 @@ public class InvoiceDetailDao {
 				client.setShortName(rs.getString("shortName"));
 				client.setId(rs.getInt("clientId"));
 				client.setGSTno(rs.getString("gstNo"));
+				client.setActive("Y".equalsIgnoreCase(rs.getString("isActive")));
 				invoiceDetail.setClient(client);
 				return invoiceDetail;
 			}

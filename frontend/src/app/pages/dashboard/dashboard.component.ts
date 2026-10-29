@@ -1,8 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
+import { ChangeDetectorRef, Component, HostListener, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { finalize, forkJoin } from 'rxjs';
-import { MonthlySales, ClientSales, Option, Overview, SaleSummary, SalesApiService } from '../../core/sales-api.service';
+import { InvoiceDetail, MonthlySales, ClientSales, Option, Overview, SaleSummary, SalesApiService } from '../../core/sales-api.service';
 import { RouterLink } from '@angular/router';
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -39,8 +39,16 @@ import { MatSelectModule } from '@angular/material/select';
       </article>
     </div>
     <article class="panel recent"><div class="panel-head"><div><h2>Recent invoices</h2><p>Latest invoices matching the filters</p></div><a href="/invoices">View all</a></div>
-      <div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Client</th><th>Date</th><th>FY</th><th>Revenue</th><th>Status</th></tr></thead><tbody><tr *ngFor="let invoice of recentInvoices"><td><b>{{invoice.invoiceId}}</b></td><td>{{invoice.clientName}}</td><td>{{invoice.invoiceDate | date:'dd MMM yyyy'}}</td><td>{{invoice.fyYear}}</td><td>{{invoice.totalAmt | currency:'INR':'symbol':'1.0-0'}}</td><td><span class="status" [class.paid]="invoice.payReceived">{{invoice.payReceived ? 'Paid' : 'Pending'}}</span></td></tr></tbody></table></div>
+      <div class="table-wrap"><table><thead><tr><th>Invoice</th><th>Client</th><th>Date</th><th>FY</th><th>Revenue</th></tr></thead><tbody><tr class="clickable-row" *ngFor="let invoice of recentInvoices" tabindex="0" role="button" [attr.aria-label]="'View invoice ' + invoice.invoiceId" (click)="openInvoice(invoice)" (keydown.enter)="openInvoice(invoice)" (keydown.space)="$event.preventDefault(); openInvoice(invoice)"><td><b>{{invoice.invoiceId}}</b></td><td>{{invoice.clientName}}</td><td>{{invoice.invoiceDate | date:'dd MMM yyyy'}}</td><td>{{invoice.fyYear}}</td><td>{{invoice.totalAmt | currency:'INR':'symbol':'1.0-0'}}</td></tr></tbody></table></div>
     </article>
+    <div class="detail-backdrop" *ngIf="invoicePopupOpen" (click)="closeInvoicePopup()"><aside class="invoice-detail" role="dialog" aria-modal="true" aria-labelledby="dashboard-invoice-title" (click)="$event.stopPropagation()"><button class="detail-close" type="button" (click)="closeInvoicePopup()" aria-label="Close invoice details">×</button>
+      <p class="eyebrow">Invoice details</p><h2 id="dashboard-invoice-title">{{popupInvoice?.invoiceId || 'Invoice'}}</h2>
+      <p class="empty" *ngIf="invoicePopupLoading">Loading invoice details…</p><p class="error" *ngIf="invoicePopupError">{{invoicePopupError}}</p>
+      <ng-container *ngIf="!invoicePopupLoading && popupInvoice as invoice"><dl class="detail-meta"><div><dt>Client</dt><dd>{{invoice.client?.clientName || '—'}}</dd></div><div><dt>Invoice date</dt><dd>{{invoice.invoiceDate | date:'dd MMM yyyy'}}</dd></div><div><dt>GST number</dt><dd>{{invoice.client?.GSTno || '—'}}</dd></div><div><dt>Buyer order</dt><dd>{{invoice.buyerDoc || '—'}}</dd></div></dl>
+        <div class="table-wrap"><table><thead><tr><th>Description</th><th>HSN code</th><th>Qty</th><th>Rate</th><th>Total</th></tr></thead><tbody><tr *ngFor="let item of invoice.items"><td>{{item.itemDescription}}</td><td>{{item.hnsCode || '—'}}</td><td>{{item.quantity}}</td><td>{{item.rate | currency:'INR':'symbol':'1.0-0'}}</td><td>{{item.totalAmount | currency:'INR':'symbol':'1.0-0'}}</td></tr></tbody></table></div>
+        <div class="detail-totals"><div><small>Subtotal</small><strong>{{invoice.billAmount | currency:'INR':'symbol':'1.0-0'}}</strong></div><div><small>Tax</small><strong>{{invoice.taxAmount | currency:'INR':'symbol':'1.0-0'}}</strong></div><div><small>Grand total</small><strong>{{invoice.grandTotal | currency:'INR':'symbol':'1.0-0'}}</strong></div></div>
+      </ng-container>
+    </aside></div>
   </section>`
 })
 export class DashboardComponent implements OnInit {
@@ -51,6 +59,8 @@ export class DashboardComponent implements OnInit {
   overview: Overview & { netRevenue: number } = { sumBill: 0, sumPartPymt: 0, invoiceCount: 0, netRevenue: 0 };
   clientSales?: ClientSales; monthlySales?: MonthlySales;
   monthTooltip?: { name: string; revenue: number };
+  invoicePopupOpen = false; invoicePopupLoading = false; invoicePopupError = ''; popupInvoice?: InvoiceDetail;
+  private invoicePopupRequest = 0;
   ngOnInit() {
     const current = this.api.currentFinancialYearKey();
     this.api.getYears().pipe(finalize(() => this.changeDetector.markForCheck())).subscribe({ next: response => { this.years = response.data ?? []; this.selectedYear = this.years.find(year => year.key === current)?.key ?? this.years.at(-1)?.key ?? this.years[0]?.key ?? current; this.fyLoading = false; this.refresh(); }, error: () => { this.error = 'Could not load financial years.'; this.fyLoading = false; this.loading = false; } });
@@ -63,6 +73,16 @@ export class DashboardComponent implements OnInit {
   get matchingClients() { const query=(typeof this.clientFilterValue==='string'?this.clientFilterValue:'').trim().toLowerCase(); return [...(query?[]:[{key:0,value:'All clients'}]),...this.clients.filter(client=>!query||client.value.toLowerCase().includes(query))].slice(0,60); }
   onClientInput(value: Option | string) { if(typeof value!=='string') return; this.clientFilterValue=value; if(this.selectedClient && value!==this.clients.find(client=>client.key===this.selectedClient)?.value){this.selectedClient=0;this.refresh();} }
   selectClient(client: Option) { this.clientFilterValue=client; if(this.selectedClient!==client.key){this.selectedClient=client.key;this.refresh();} }
+  @HostListener('document:keydown.escape') onEscape() { if (this.invoicePopupOpen) this.closeInvoicePopup(); }
+  openInvoice(invoice: SaleSummary) {
+    const request = ++this.invoicePopupRequest;
+    this.invoicePopupOpen = true; this.invoicePopupLoading = true; this.invoicePopupError = ''; this.popupInvoice = undefined;
+    this.api.getInvoiceDetail(invoice.invoiceId, invoice.fyYearId).pipe(finalize(() => { if (request === this.invoicePopupRequest) this.invoicePopupLoading = false; this.changeDetector.markForCheck(); })).subscribe({
+      next: response => { if (request === this.invoicePopupRequest) this.popupInvoice = response.data; },
+      error: () => { if (request === this.invoicePopupRequest) this.invoicePopupError = 'Could not load invoice details. Please close and try again.'; }
+    });
+  }
+  closeInvoicePopup() { ++this.invoicePopupRequest; this.invoicePopupOpen = false; this.invoicePopupLoading = false; this.invoicePopupError = ''; this.popupInvoice = undefined; }
   showMonthTooltip(name: string, revenue: number) { this.monthTooltip = { name, revenue }; }
   hideMonthTooltip() { this.monthTooltip = undefined; }
   get clientSummary() { const rows=new Map<string,{name:string;count:number;revenue:number}>(); this.invoices.forEach(invoice=>{const name=invoice.clientName||'Unknown client';const row=rows.get(name)??{name,count:0,revenue:0};row.count++;row.revenue+=Number(invoice.totalAmt)||0;rows.set(name,row);}); return [...rows.values()].sort((a,b)=>b.revenue-a.revenue||b.count-a.count||a.name.localeCompare(b.name)).slice(0,8); }

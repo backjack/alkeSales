@@ -6,7 +6,7 @@ export interface Option { key: number; value: string; }
 export interface SaleSummary {
   invoiceId: string; invoiceDate: string; clientName: string; clientId: number;
   fyYear: string; fyYearId: number; totalAmt: number; payedAmt: number;
-  payReceived: boolean; ragStatus: string; details: string;
+  payReceived: boolean; ragStatus: string; details: string; clientActive: boolean;
 }
 export interface Client { id: number; clientName: string; shortName: string; GSTno: string; contactPerson: string; emailAddress: string; address: string; telehoneNo: string; active: boolean; }
 export interface InvoiceItem { id: number; itemDescription: string; hnsCode: string; rate: number; quantity: number; tax: number; cgst: number; sgst: number; igst: number; amount: number; taxAmount: number; totalAmount: number; }

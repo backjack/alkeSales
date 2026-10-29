@@ -23,6 +23,7 @@ public class SaleSummaryRowMapper implements RowMapper<SaleSummary> {
 			saleSummary.setInvoiceDate(rs.getDate("invoiceDate"));
 			saleSummary.setFyYearId(rs.getInt("fyYear"));
 			saleSummary.setClientId(rs.getInt("clientId"));
+			saleSummary.setClientActive("Y".equalsIgnoreCase(rs.getString("clientActive")));
 			saleSummary.setDetails(rs.getString("Details"));
 			double totalAmount = saleSummary.getTotalAmt();
 			double payedAmount = saleSummary.getPayedAmt();

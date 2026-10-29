@@ -17,6 +17,9 @@ public class SaleSummary {
 	private Date payDateFinal;
 	private String ragStatus;
 	private Integer clientId;
+	private boolean clientActive;
+	public boolean isClientActive() { return clientActive; }
+	public void setClientActive(boolean clientActive) { this.clientActive = clientActive; }
 	
 	public Date getPayDateFinal() {
 		return payDateFinal;

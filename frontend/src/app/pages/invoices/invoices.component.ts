@@ -71,7 +71,7 @@ export class InvoicesComponent implements OnInit {
     headerFontWeight: 700, rowHeight: 76, headerHeight: 56, spacing: 4,
   });
   readonly itemDefaultColDef: ColDef<InvoiceItem> = {
-    sortable: true, filter: true, resizable: true, wrapHeaderText: true,
+    sortable: true, filter: true, resizable: true, suppressMovable: true, wrapHeaderText: true,
     suppressKeyboardEvent: p => p.event.target instanceof HTMLElement && !!p.event.target.closest('input, textarea'),
   };
   private itemCell(field: ItemField): ColDef<InvoiceItem> {
@@ -129,6 +129,7 @@ export class InvoicesComponent implements OnInit {
     if (!params.data) return actions;
     const invoice = params.data;
     for (const [label, icon, action] of [['Word', 'W', () => this.downloadWord(invoice)], ['Edit', '✎', () => this.showDetail(invoice, true)], ['PDF', '↓', () => this.downloadPdf(invoice)]] as const) {
+      if (label === 'Edit' && !invoice.clientActive) continue;
       const button = document.createElement('button');
       button.type = 'button'; button.className = 'table-action icon-button';
       button.textContent = icon;
@@ -187,14 +188,14 @@ export class InvoicesComponent implements OnInit {
   displayEditorClient = (client: Client | string | null): string => typeof client === 'string' ? client : client?.clientName ?? '';
   get matchingEditorClients(): Client[] {
     const query = (typeof this.editorClientValue === 'string' ? this.editorClientValue : '').trim().toLowerCase();
-    return this.clientRecords.filter(client => !query || client.clientName.toLowerCase().includes(query) || (client.GSTno || '').toLowerCase().includes(query));
+    return this.clientRecords.filter(client => (!this.creating || client.active) && (!query || client.clientName.toLowerCase().includes(query) || (client.GSTno || '').toLowerCase().includes(query)));
   }
   onEditorClientInput(value: Client | string) {
     if (typeof value !== 'string') return;
     this.editorClientValue = value;
     if (this.summary?.clientId && value !== this.summary.clientName) this.selectClient(0);
   }
-  selectEditorClient(client: Client) { this.editorClientValue = client; this.selectClient(client.id); }
+  selectEditorClient(client: Client) { if (this.creating && !client.active) return; this.editorClientValue = client; this.selectClient(client.id); }
   private errorMessage(e: unknown, fallback: string) {
     if (e instanceof HttpErrorResponse) {
       if (e.status === 401 || e.status === 403 || e.url?.includes('/login')) return 'Please sign in again to continue.';
@@ -268,7 +269,7 @@ export class InvoicesComponent implements OnInit {
       const [number]=await Promise.all([firstValueFrom(this.api.nextInvoiceId(this.year)),this.fetchClients(),this.fetchItems()]);
       if(request!==this.detailRequest) return;
       this.summary={invoiceId:number.data,invoiceDate:this.dateValue(),clientName:'',clientId:0,fyYearId:this.year,
-        fyYear:this.years.find(x=>x.key===this.year)?.value??'',totalAmt:0,payedAmt:0,payReceived:false,ragStatus:'',details:''};
+        fyYear:this.years.find(x=>x.key===this.year)?.value??'',totalAmt:0,payedAmt:0,payReceived:false,ragStatus:'',details:'',clientActive:true};
       this.detail={invoiceId:number.data,fyear:this.year,invoiceDate:this.summary.invoiceDate,client:{} as Client,items:[],
         billAmount:0,taxAmount:0,grandTotal:0,deliveryDoc:'',deliveryDate:'',buyerDoc:'',buyerDocDate:'',destination:'',despatchedVia:''};
       this.editorClientValue = '';
@@ -289,6 +290,7 @@ export class InvoicesComponent implements OnInit {
       this.detail={...result.data,client:this.normalizeClient(result.data.client),items:(result.data.items??[]).map(x=>({...x,tax:x.tax??0,cgst:x.cgst??0,sgst:x.sgst??0,igst:x.igst??0})),
         invoiceDate:this.summary.invoiceDate,
         deliveryDate:result.data.deliveryDate?.slice(0,10)??'',buyerDocDate:result.data.buyerDocDate?.slice(0,10)??''};
+      if (!this.detail.client.active) this.editing = false;
       this.editorClientValue = this.detail.client;
       this.syncInvoiceDatePicker();
     } catch(e) { this.editorError=this.errorMessage(e,'Could not load invoice details. Close and retry.'); }

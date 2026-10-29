@@ -80,7 +80,7 @@ public class SummaryDao {
 		parameters.addValue("fyyears", fyyears);	
 		parameters.addValue("groupId", groupId);	
 		
-		String sqlQuery = "select k.clientId,k.fyYearDesc,k.invoiceId,k.clientName,k.fyYear,k.totalAmt,k.invoiceDate,k.Details, k.payrecoveryDays,p.partPay,k.groupId from ( select f.fyYearDesc,s.invoiceId,c.clientId,c.clientName,s.fyYear,s.totalAmt,s.invoiceDate,s.Details, s.payrecoveryDays,s.groupId from sales s join client c on s.clientId= c.clientId and s.groupId=c.groupId join fy f on f.fyYear = s.fyYear ) k left join ( select fyyear,InvoiceId,groupId,sum(partPymt) as partPay from partPayment f group by fyyear,InvoiceId,groupId ) p on k.fyYear = p.fyYear and p.InvoiceId =k.invoiceId and k.groupId=p.groupId where k.fyyear in(:fyyears) and k.groupId =(:groupId)";
+		String sqlQuery = "select k.clientId,k.clientActive,k.fyYearDesc,k.invoiceId,k.clientName,k.fyYear,k.totalAmt,k.invoiceDate,k.Details, k.payrecoveryDays,p.partPay,k.groupId from ( select f.fyYearDesc,s.invoiceId,c.clientId,c.clientName,c.isActive as clientActive,s.fyYear,s.totalAmt,s.invoiceDate,s.Details, s.payrecoveryDays,s.groupId from sales s join client c on s.clientId= c.clientId and s.groupId=c.groupId join fy f on f.fyYear = s.fyYear ) k left join ( select fyyear,InvoiceId,groupId,sum(partPymt) as partPay from partPayment f group by fyyear,InvoiceId,groupId ) p on k.fyYear = p.fyYear and p.InvoiceId =k.invoiceId and k.groupId=p.groupId where k.fyyear in(:fyyears) and k.groupId =(:groupId)";
 		
 		if(clientId!=null && clientId.size()>0) {
 			parameters.addValue("clientId", clientId);
